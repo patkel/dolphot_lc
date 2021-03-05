@@ -8,7 +8,7 @@ import sewpy
 from astropy.io import ascii
 from astropy.io import fits
 import astropy.coordinates as coord
-import astropy.units as u
+from astropy import units as u
 from astropy.wcs import WCS
 import sys
 from stwcs.wcsutil import headerlet
@@ -68,6 +68,58 @@ dolphot_params_WFC3_IR = {
     'rpsf' : 10,
     'WFC3IRpsfType': 1,
     #'ref2img' : "20 Value Array",
+    }
+
+objCoords = {'Icarus': [495.70, 1004.34, 177.398584, 22.396684], # measured from ACS_WFC_F814W/F814Wglass_small100001_drz_sci.fits using hstphot 
+    'Iapyx': [485.99, 1007.85, 177.398671, 22.396713], # measured from DIFFERENCE IMAGE WFC3_IR_F125W/F814Wglass_diff_drz.fits using hstphot 
+    'Perdix': [488.82, 1009.72, 177.398646, 22.396729], # measured from DIFFERENCE IMAGE WFC3_IR_F125W/F814Wglass_diff_drz.fits using hstphot 
+    'S1': [2635.27, 2978.30, 177.398231, 22.395630], # for big image; measured from F125W 133 
+    'S2': [2692.26, 2997.02, 177.397718, 22.395786], # for big image; measured from 134 
+    'S3': [2730.87, 2967.26, 177.397370, 22.395538], # for big image; measured from 134 
+    'S4': [2682.07, 2925.37, 177.397810, 22.395189], # for big image; measured from 134 
+    'SX': [2426.58, 3106.85, 177.400112, 22.396701], # for big image; measured from 194
+    'STAR1': [1124.680000,2007.160000,177.422940,22.389870],
+    'STAR2': [2829.910000,1996.640000,177.402448,22.389754],
+    'STAR3': [3082.560000,4425.110000,177.399412,22.416737],
+    'STAR4': [3838.270000,2101.550000,177.390331,22.390919],
+    'STAR5': [3976.490000,4263.650000,177.388667,22.414942],
+    'STAR6': [4150.350000,2744.150000,177.386580,22.398059],
+    'STAR101': [-99,-99,177.420382,22.372373],
+    'STAR102': [-99,-99,177.406276,22.384212],
+    'STAR103': [-99,-99,177.412897,22.391200],
+    'STAR104': [-99,-99,177.415413,22.409081],
+    'STAR105': [-99,-99,177.379507,22.411876],
+    'STAR106': [-99,-99,177.397187,22.372679],
+    'STAR107': [-99,-99,177.387891,22.384909],
+    'STAR108': [-99,-99,177.406167,22.387714],
+    'STAR109': [-99,-99,177.375904,22.401404],
+    'STAR110': [-99,-99,177.385290,22.415757],
+    'STAR201': [-99,-99,177.412897,22.391200],
+    'STAR202': [-99,-99,177.379507,22.411877],
+    'STAR203': [-99,-99,177.387891,22.384909],
+    'STAR204': [-99,-99,177.406276,22.384211],
+    'STAR205': [-99,-99,177.406168,22.387714],
+    'STAR206': [-99,-99,177.415414,22.409081],
+    'STAR207': [-99,-99,177.395361,22.410062],
+    'STAR208': [-99,-99,177.406947,22.408331],
+    'STAR209': [-99,-99,177.402394,22.407392],
+    'STAR210': [-99,-99,177.418077,22.417575],
+    'STAR211': [-99,-99,177.388402,22.393247],
+    'STAR212': [-99,-99,177.388777,22.411933],
+    'STAR213': [-99,-99,177.407241,22.410524],
+    'STAR214': [-99,-99,177.422670,22.390170],
+    'STAR215': [-99,-99,177.408522,22.392026],
+    'STAR216': [-99,-99,177.386934,22.395965],
+    'STAR217': [-99,-99,177.409056,22.393866],
+    'STAR218': [-99,-99,177.407859,22.395983],
+    'STAR219': [-99,-99,177.4146934,22.4028456],
+    'STAR220': [-99,-99,177.388666,22.414936],
+    'STAR221': [-99,-99,177.416606,22.398750],
+    'STAR222': [-99,-99,177.411282,22.403750],
+    'STAR223': [-99,-99,177.397255,22.387050],
+    'STAR224': [-99,-99,177.411654,22.415529],
+    'STAR225': [-99,-99,177.385809,22.396707],
+    'STAR226': [-99,-99,177.388105,22.390316],
     }
 
 #Image object with useful properties
@@ -278,17 +330,19 @@ def shell_command(cmd):
     os.system(cmd)
 
 #Copy files to dolphot_prepped and run through Dolphot masking, splitgroups, and calsky
-def prep_files_for_dolphot(r_in, r_out, step, sig_low, sig_high):
-    prepped_dir = imroot+'/dolphot_prepped'
+def prep_files_for_dolphot(image_directory, r_in, r_out, step, sig_low, sig_high):
+    prepped_dir = imroot + image_directory
 
-    try:
-        os.mkdir(prepped_dir)
-    except:
-        shutil.rmtree(prepped_dir)
-        os.mkdir(prepped_dir)
+    #FLAG
+    if image_directory == '/dolphot_prepped':
+        try:
+            os.mkdir(prepped_dir)
+        except:
+            shutil.rmtree(prepped_dir)
+            os.mkdir(prepped_dir)
 
-    for im in IMAGES:
-        shutil.copyfile(im.loc,im.prep_loc)
+        for im in IMAGES:
+            shutil.copyfile(im.loc,im.prep_loc)
 
     for im in IMAGES:
         shell_command(dolphot_path + MASK + ' ' + prepped_dir + '/' +'%s_%s.fits' % (im.name, SUFFIX))
@@ -747,7 +801,7 @@ def gethead(im,item):
     return value
 
 
-def blot_back():
+def blot_back(image_directory, r_in, r_out, step, sig_low, sig_high):
     prep_imaging()
 
     #all_images = [a.loc for a in IMAGES]
@@ -796,7 +850,7 @@ def blot_back():
             if INST == 'ACS' or (INST == 'WFC3' and DETEC == 'UVIS'):
                 blot(im_drz_blot, im_to_blot + '[sci,%d]' % chip, outdata, addsky=False, in_units='cps', out_units='counts', expout=1./EXPTIME_DRZ*EXPTIME_BLT*rescale_fac,configObj=blotobj)
             elif INST == 'WFC3' and DETEC == 'IR':
-                blot(im_drz_blot, im_to_blot + '[sci,%d]' % chip,        outdata,       addsky=False, in_units='cps', out_units='counts', expout=1./EXPTIME_DRZ*rescale_fac,configObj=blotobj)
+                blot(im_drz_blot, im_to_blot + '[sci,%d]' % chip, outdata, addsky=False, in_units='cps', out_units='counts', expout=1./EXPTIME_DRZ*rescale_fac,configObj=blotobj)
 
             conv =  p_dol_prep[1].data / p[1].data
 
@@ -807,6 +861,12 @@ def blot_back():
 
             chip_name = '%s_%s.chip%d.fits' % (im.name, SUFFIX.lower(), chip)
 
+            if chip == 1:
+                p[1].data = 1. * (p[1].data - a[1].data) #* conv
+
+            elif chip == 2:
+                p[4].data = 1. * (p[4].data - a[1].data) #* conv
+
             shutil.copyfile(dolphot_prepped_dir + chip_name.replace('.fits','.sky.fits'), diff_dir + chip_name.replace('.fits','.sky.fits'))
 
         print('im diff', im_diff)
@@ -815,8 +875,7 @@ def blot_back():
 
         print(im_diff, im_drz_blot, im_to_blot + '[sci,1]')
 
-    #FLAG
-    #PREP_FILES_FOR_DOLPHOT
+    prep_files_for_dolphot(image_directory, r_in, r_out, step, sig_low, sig_high)
 
 #Not needed right now
 def make_difference_ims(groupnum=None, instrument='WFC3', detector='IR', filt='F125W', objname='refsdal', big=True, driz_cr=1, single_sci=False):
@@ -1153,10 +1212,10 @@ def dolphot_simultaneous():
     #os.chdir( os.environ['icarus'] + '/processing/')
 
 def sky2xy(img):
-    ra = coord.Angle( sn_ra_me, unit=u.hour )
+    ra = coord.Angle( sn_ra_me, unit=u.hour ) #pylint: disable = no-member
     ra_deg = ra.degree
                                                                                   
-    dec = coord.Angle( sn_dec_me, unit=u.degree )
+    dec = coord.Angle( sn_dec_me, unit=u.degree ) #pylint: disable = no-member
     dec_deg = dec.degree         
                                                                                   
     print(ra_deg, dec_deg)
@@ -1175,7 +1234,7 @@ def sky2xy(img):
         print(ra_deg, dec_deg)
         
                                                                                       
-        coords = coord.SkyCoord( ra_deg*u.degree, dec_deg*u.degree, equinox='J2000' )
+        coords = coord.SkyCoord( ra_deg*u.degree, dec_deg*u.degree, equinox='J2000' ) #pylint: disable = no-member
         print(coords.ra, coords.dec)
                                                                                       
         print(w.wcs_world2pix(0., 0., 1))
@@ -1188,7 +1247,7 @@ def sky2xy(img):
 
         #FLAG
         import re
-        res = re.split('\s+', output.replace(' (off image)','') )
+        res = re.split('\s+', output.replace(' (off image)','')) #pylint: disable = anomalous-backslash-in-string
         snx = float(res[-2])
         sny = float(res[-1])
 
@@ -1218,3 +1277,83 @@ def mk_param(instrument, detector, param_file, extra_params, imtype):
     for key in extra_params:
         f.write('%s = %s\n' % (key, str(extra_params[key])))
     f.close()
+
+def dolphot_force(special, apermag, force_same_mag, psfphot):
+    #Only force_same_mag and psfphot change
+    #special is false
+    #apermag is false
+
+    imdir_prepped = directory = imroot + '/dolphot_prepped/'
+    imdir_simultaneous = directory = imroot + '/diffs/'
+
+    output_dir = imroot + 'coadd/'
+    ref_image_subarray = FILT + 'glass_drz'
+
+    #FLAG
+    os.chdir( imdir_simultaneous)
+
+    xytfile = open('xytfile', 'w')
+
+    objs = []
+
+    #FLAG
+    objNames = ['S1','S2','S3','S4','SX']
+
+    for obj in objNames: 
+
+        _, _, small_ra, small_dec = objCoords[obj]
+
+        w = WCS(fits.open(ref_image)['SCI']) 
+
+        import astropy.units as u
+
+        import astropy.coordinates as coord
+        ra = coord.Angle( small_ra, unit=u.hour) #pylint: disable = no-member
+        ra_deg = ra.degree
+                                                                                      
+        dec = coord.Angle( small_dec, unit=u.degree) #pylint: disable = no-member
+        dec_deg = dec.degree         
+ 
+
+        ''' need to translate '''
+        big_x, big_y = w.wcs_world2pix(small_ra, small_dec, 1, ra_dec_order=True) 
+        print(big_x, big_y, obj)
+
+        objs.append([obj, big_x, big_y])
+
+        xytfile.write('0 1 %f %f 2 10\n' % (big_x, big_y))
+    xytfile.close()
+
+    if apermag:
+        cmd = 'dolphot singlestar -pdolphot.params xytfile=xytfile usephot=output PSFPhot=0 Force1=1 SigFind=-99 Force1=1 SigFindMult=1.0 SigFinal=-99' 
+    else:
+        cmd = 'dolphot singlestar -pdolphot.params xytfile=xytfile usephot=output PSFPhot=%s Force1=1 FitSky=1 SigFind=-99 SigFindMult=1.0 SigFinal=-99 ' % psfphot
+
+        if force_same_mag:
+            cmd += ' and ForceSameMag=1'
+        else:
+            cmd += ' and ForceSameMag=0'
+
+    #FLAG
+    os.system(cmd)
+
+    statinfo = os.stat('singlestar')
+    #FLAG
+    os.chdir(imroot + '/processing/')
+
+    print(imdir_simultaneous +  'singlestar')            
+    #a = dolphot_output( imdir_simultaneous +  'singlestar', groupnum)
+    for objname,x,y in objs:
+
+        if apermag:
+            settings = 'forceaper'
+        else:
+            if force_same_mag:
+                settings = 'force_force_same_mag_%d' % psfphot                   
+            else:
+                settings = 'force_no_force_same_mag_%d' % psfphot                    
+            
+        #a.info_single_object( x, y, objname, 'diff', settings, verbose=False)
+
+    os.chdir(imroot + '/processing/')
+

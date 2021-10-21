@@ -3,10 +3,11 @@ import shutil
 from astropy.io import fits
 
 class dlc_parameters:
-    def __init__(self, ORIG_IM_LOC, IM_LOC, REF_IMAGE_FULL,
+    def __init__(self, ORIG_IM_LOC, ORIG_TEMP_LOC, IM_LOC, REF_IMAGE_FULL,
                  DOLPHOT_PATH, IMROOT, SN_RA_ME, SN_DEC_ME,
                  SEXPATH, DOLPHOT_PARAMS):
         self.ORIG_IM_LOC = ORIG_IM_LOC
+        self.ORIG_TEMP_LOC = ORIG_TEMP_LOC
         self.IM_LOC = IM_LOC
         self.REF_IMAGE = os.path.split(REF_IMAGE_FULL)[1]
         self.REF_IMAGE_PATH = os.path.split(REF_IMAGE_FULL)[0]
@@ -17,8 +18,12 @@ class dlc_parameters:
         self.REF_IMAGE_NO_DOLPHOT = f'{self.REF_IMAGE_PATH}/'\
                                     f'{self.REF_IMAGE.replace(".fits", "_no_dolphot.fits")}'
         self.SEXPATH = SEXPATH
-        self.IMAGES = glob_image(self.IM_LOC, self.REF_IMAGE_PATH,
-                                 self.REF_IMAGE, self.IMROOT)
+        self.IMAGES = glob_image(self.ORIG_IM_LOC, f'{self.IM_LOC}/ims',
+                                 self.REF_IMAGE_PATH, self.REF_IMAGE,
+                                 self.IMROOT)
+        self.TEMPLATE = glob_image(self.ORIG_TEMP_LOC, f'{self.IM_LOC}/template',
+                                   self.REF_IMAGE_PATH, self.REF_IMAGE,
+                                   self.IMROOT)
         self.DOLPHOT_PARAMS = DOLPHOT_PARAMS
         self.INST = self.IMAGES[0].instrument
         self.DETEC = self.IMAGES[0].detector
@@ -70,8 +75,8 @@ class Image:
 
 
 # Build IMAGES list with image objects
-def glob_image(im_loc, ref_image_path, ref_image, imroot):
-    image_list = os.listdir(im_loc)
+def glob_image(orig_im_loc ,im_loc, ref_image_path, ref_image, imroot):
+    image_list = os.listdir(orig_im_loc)
     N = len(image_list)
     for i in range(0, N):
         image_list[i] = im_loc+'/'+image_list[i]
@@ -97,31 +102,53 @@ def glob_image(im_loc, ref_image_path, ref_image, imroot):
 
     return(image_details)
 
-def Images_Setup(im_loc, orig_im_loc):
+def Images_Setup(im_loc, orig_im_loc, orig_temp_loc):
+
     try:
         os.mkdir(im_loc)
+    except FileExistsError:
+        pass
+
+    try:
+        os.mkdir(f'{im_loc}/ims')
+        a = os.listdir(orig_im_loc)
+
+        b = []
+
+        for x in range(0, len(a)):
+            if a[x][-4:] == 'fits':
+                b.append(a[x])
+
+        for x in range(0, len(b)):
+            shutil.copyfile(f'{orig_im_loc}/{b[x]}', f'{im_loc}/ims/{b[x]}')
     
     except FileExistsError:
         pass
 
-    a = os.listdir(orig_im_loc)
+    try:
+        os.mkdir(f'{im_loc}/template')
+        a = os.listdir(orig_temp_loc)
 
-    b = []
+        b = []
 
-    for x in range(0, len(a)):
-        if a[x][-4:] == 'fits':
-            b.append(a[x])
+        for x in range(0, len(a)):
+            if a[x][-4:] == 'fits':
+                b.append(a[x])
 
-    for x in range(0, len(b)):
-        shutil.copyfile(f'{orig_im_loc}/{b[x]}', f'{im_loc}/{b[x]}')
+        for x in range(0, len(b)):
+            shutil.copyfile(f'{orig_temp_loc}/{b[x]}', f'{im_loc}/template/{b[x]}')
+    
+    except FileExistsError:
+        pass
 
-def prep_directory(ORIG_IM_LOC, IM_LOC, REF_IMAGE_FULL,
+
+def prep_directory(ORIG_IM_LOC, ORIG_TEMP_LOC, IM_LOC, REF_IMAGE_FULL,
                    DOLPHOT_PATH, IMROOT, SN_RA_ME, SN_DEC_ME,
                    SEXPATH, DOLPHOT_PARAMS):
 
-    Images_Setup(IM_LOC, ORIG_IM_LOC)
+    Images_Setup(IM_LOC, ORIG_IM_LOC, ORIG_TEMP_LOC)
     
-    param_obj = dlc_parameters(ORIG_IM_LOC, IM_LOC, REF_IMAGE_FULL,
+    param_obj = dlc_parameters(ORIG_IM_LOC, ORIG_TEMP_LOC, IM_LOC, REF_IMAGE_FULL,
                                DOLPHOT_PATH, IMROOT, SN_RA_ME, SN_DEC_ME,
                                SEXPATH, DOLPHOT_PARAMS)
     

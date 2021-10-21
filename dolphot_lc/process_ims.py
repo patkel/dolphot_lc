@@ -5,7 +5,7 @@ from drizzlepac import tweakreg
 from drizzlepac import tweakback
 import scipy
 
-def mk_diff3(dlc_param):
+def coadd_ims(dlc_param):
     image_list = os.listdir('image_backup')
 
     shutil.copyfile('default.conv', './Images/default.conv')
@@ -16,8 +16,9 @@ def mk_diff3(dlc_param):
     except FileExistsError:
         pass
 
-    flist = os.listdir('Images')
-    files_found_backup = [f'{dlc_param.IMROOT}/Images/{x}' for x in flist]
+    #Flag replace with dlc_param.IM_LOC
+    flist = os.listdir('Images/template')
+    files_found_backup = [f'{dlc_param.IMROOT}/Images/template/{x}' for x in flist]
 
     i = len(files_found_backup) - 1
     while i > -1:
@@ -35,14 +36,11 @@ def mk_diff3(dlc_param):
     coaddastromUseSaved = 0
     adjustwithcoadd = 1
     recoaddwithadjust = 1
-    adjustwithHFFcoadd = 0
-    recoaddwithHFFadjust = 0
     meassky = 1
     recoaddskyfix = 1
-    recoaddglobalmin = 0  # 1
-    recoaddnorthup = 0  # 1
-    checkrecoadd = 0  # 1
-    subtractims = 0  # 1
+    recoaddglobalmin = 0
+    recoaddnorthup = 0
+    alignsci = 0
 
     files_backup = []
 
@@ -56,7 +54,6 @@ def mk_diff3(dlc_param):
     for fname in files_found_backup:
         from astropy.io import fits
         p = fits.open(fname)
-        targ = p[0].header['TARGNAME']
         try:
             filt_exp = p[0].header['FILTER']
         except KeyError:
@@ -90,7 +87,7 @@ def mk_diff3(dlc_param):
                                           skymethod='localmin',
                                           preserve=False, )
             try:
-                os.mkdir('IMS_nocr')
+                os.mkdir('TEMP_nocr')
             except FileExistsError:
                 pass
 
@@ -98,11 +95,11 @@ def mk_diff3(dlc_param):
                            x in (ims)]
 
             for fname in cfiles_nocr:
-                os.system(f'cp {fname} ./IMS_nocr/')
+                os.system(f'cp {fname} ./TEMP_nocr/')
 
         else:
             ''' copying cleaned images '''
-            os.system('cp ./IMS_nocr/* ./IMS/')
+            os.system('cp ./TEMP_nocr/* ./IMS/')
             os.system('cp ./Images/* ./IMS/')
             ''' copying cleaned images '''
 
@@ -112,7 +109,7 @@ def mk_diff3(dlc_param):
 
     if runtweakreg:
         try:
-            os.mkdir('IMS_aligned')
+            os.mkdir('TEMP_aligned')
         except FileExistsError:
             pass
 
@@ -184,10 +181,10 @@ def mk_diff3(dlc_param):
                         attach=False, archive=False)
 
             for fname in files:
-                os.system(f'cp {fname} ./IMS_aligned/')
+                os.system(f'cp {fname} ./TEMP_aligned/')
 
         else:
-            os.system('cp ./IMS_aligned/* ./IMS/')
+            os.system('cp ./TEMP_aligned/* ./IMS/')
 
     if coaddastrom:
 
@@ -360,7 +357,8 @@ def mk_diff3(dlc_param):
                 [f for f in cfiles[:]], output=f'coadd_tweak_{dlc_param.FILT}.fits',
                 final_wcs=True, driz_cr_corr=True, num_cores=64,
                 combine_type=combine_type, skysub=True, build=False,
-                skyfile='skyfile_mode.txt', skyuser='', preserve=False)
+                skyfile='skyfile_mode.txt', skyuser='', preserve=False,
+                final_refimage = refim)
 
     if recoaddglobalmin:
 
@@ -537,3 +535,104 @@ def make_sextractor_cat1(image, extension, filt, threshold,
         reg.close()
 
     return fitscat, fname
+
+
+def align_sci(dlc_param):
+    ims = []
+    for im in dlc_param.IMAGES:
+        ims.append(im.loc)
+
+    refim = '/home/tprocter/HST_Diff/HST_Icarus/Images/coadd_tweak_F814W_sci.fits'
+
+    if len(ims) <= 6:
+        combine_type = 'minmed'
+    else:
+        combine_type = 'imedian'
+
+    os.chdir(dlc_param.IM_LOC)
+
+    ''' localmin since we just want this for
+        source detection and astrometry'''
+    for cfiles in [ims]:
+        astrodrizzle.AstroDrizzle(cfiles, driz_cr_corr=True,
+                                  output=str('output'),
+                                  num_cores=8,
+                                  combine_type=combine_type,
+                                  final_wcs=True, skysub=True,
+                                  skymethod='localmin',
+                                  preserve=False, )
+
+    try:
+        os.mkdir('IMS_aligned')
+    except FileExistsError:
+        pass
+
+    if True:
+        for cfiles in [ims]:
+
+            cfiles_nocr = [x.replace('_flc.fits', '_crclean.fits') for
+                            x in cfiles]
+
+            catName = 'astdriz_catfile.list'
+
+            f = open(catName, 'w')
+
+            fnames = []
+
+            for im in cfiles_nocr:
+                ''' manually compute sigma '''
+
+                im = os.path.abspath(im)
+
+                im_short = im.replace('//', '/')
+
+                threshold = 10
+
+                make_sextractor_cat1(im, 1, dlc_param.FILT, threshold, maxobjs=1000)
+                make_sextractor_cat1(im, 4, dlc_param.FILT, threshold, maxobjs=1000)
+
+                a = im_short.replace('.fits', '')
+                b = im_short.replace('.fits', '')
+                f.write(f'{im_short} {a}_ref_1.cat {b}_ref_4.cat\n')
+
+                fnames.append(im_short)
+
+            f.close()
+
+            tweakreg.TweakReg(fnames[:], catfile=catName, xcol=1,
+                                ycol=2, updatehdr=True,  nclip=5,
+                                peakmax=50000, sigma=2.5, searchrad=10.0,
+                                tolerance=5.0, writecat=True,
+                                headerlet=True, attach=False,
+                                clobber=True, minobj=-1,
+                                fitgeometry='general',  wcsname="TWEAK1",
+                                shiftfile=True, refimage = refim,
+                                outshifts='shift_file.txt',
+                                residplot='both', see2dplot=True,
+                                interactive=False)
+
+            from astropy.table import Table
+            shift_tab = Table.read('shift_file.txt',
+                                    format='ascii.no_header',
+                                    names=['file', 'dx', 'dy', 'rot',
+                                            'scale', 'xrms', 'yrms'])
+
+            formats = ['.2f', '.2f', '.3f', '.5f', '.2f', '.2f']
+            for i, col in enumerate(shift_tab.colnames[1:]):
+                shift_tab[col].format = formats[i]
+
+            cfiles_nocr = [x.replace('_flc.fits', '_crclean.fits') for
+                            x in cfiles]
+
+            from stwcs.wcsutil import headerlet
+            for fname, fname_orig in zip(cfiles_nocr, cfiles):
+
+                '''  some of these settings are necessary so that
+                        DOLPHOT doesn't choke later'''
+
+                headerlet.apply_headerlet_as_primary(
+                    fname_orig, fname.replace('.fits', '_hlet.fits'),
+                    attach=False, archive=False)
+
+        for fname in ims:
+            os.system(f'cp {fname} ./IMS_aligned/')

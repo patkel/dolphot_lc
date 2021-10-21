@@ -8,6 +8,7 @@ from drizzlepac.ablot import blot
 def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
     prep_imaging(dlc_param)
     im_drz_blot = f'{dlc_param.IMROOT}/Images/coadd_tweak_{dlc_param.FILT}_sci.fits'
+    #im_drz_blot = '/home/tprocter/HST_Diff/HST_Icarus/template/F814Wglass_5005_drz_sci.fits'
 
     diff_dir = f'{dlc_param.IMROOT}/diffs/'
     dolphot_prepped_dir = f'{dlc_param.IMROOT}/dolphot_prepped/'
@@ -51,7 +52,7 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
                      configObj=blotobj)
 
             elif dlc_param.INST == 'WFC3' and dlc_param.DETEC == 'IR':
-                blot(im_drz_blot, f'{im_to_blot}sci,{chip:d}]', outdata,
+                blot(im_drz_blot, f'{im_to_blot}[sci,{chip:d}]', outdata,
                      addsky=False, in_units='cps', out_units='counts',
                      expout=1./EXPTIME_DRZ*rescale_fac, configObj=blotobj)
 
@@ -72,10 +73,10 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
                             f'{diff_dir}'
                             f'{chip_name.replace(".fits", ".sky.fits")}')
 
-        p.writeto(im_diff)
+        p.writeto(im_diff, overwrite=True)
 
     prep_files_for_dolphot('/diffs', r_in, r_out,
-                           step, sig_low, sig_high)
+                           step, sig_low, sig_high, dlc_param)
 
 def prep_imaging(dlc_param):
     try:

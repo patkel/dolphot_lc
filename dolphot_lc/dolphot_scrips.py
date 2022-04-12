@@ -7,7 +7,18 @@ from astropy import units as u
 import astropy.coordinates as coord
 from astropy.wcs import WCS
 
+
 def dolphot_simultaneous(dlc_param):
+    '''
+    Creates Dolphot parameter file and runs Dolphot on processed images
+
+    Parameters
+    ----------
+
+    dlc_param : obj
+        Parameter object from prep_directory function
+    '''
+
     imdir_simultaneous = f'{dlc_param.IMROOT}/dolphot_prepped'
     try:
         os.mkdir(imdir_simultaneous)
@@ -25,7 +36,7 @@ def dolphot_simultaneous(dlc_param):
 
     imdir = f'{dlc_param.IMROOT}/dolphot/'
     imdir_dolphot_prepped = f'{dlc_param.IMROOT}/dolphot_prepped/'
-    
+
     try:
         os.mkdir(imdir)
     except FileExistsError:
@@ -42,21 +53,18 @@ def dolphot_simultaneous(dlc_param):
             fname_prepped = f'{imdir_dolphot_prepped}{name_root}_'\
                             f'{dlc_param.SUFFIX}.chip{str(chip)}'
 
-            x, y, x_size, y_size = sky2xy(f'{fname_prepped}.fits', dlc_param)
-            if 0 < x < x_size and 0 < y < y_size:
+            if chip == dlc_param.ON_CHIP:
                 imgNum += 1
 
                 fname_simultaneous = f'{imdir_simultaneous}/{name_root}_'\
                                      f'{dlc_param.SUFFIX}.chip{chip:d}'
 
-                cmd = f'cp {fname_prepped}.fits {fname_simultaneous}.fits'
                 if not glob(f'{fname_simultaneous}.fits'):
-                    os.system(cmd)  # copy hiding here
+                    shutil.copy(f'{fname_prepped}.fits',
+                                f'{fname_simultaneous}.fits')
 
-                cmd = f'cp {fname_prepped}.sky.fits '\
-                      f'{fname_simultaneous}.sky.fits'
-
-                extra_params[f'img{imgNum}_file'] = f'{name_root}_{dlc_param.SUFFIX}'\
+                extra_params[f'img{imgNum}_file'] = f'{name_root}_'\
+                                                    f'{dlc_param.SUFFIX}'\
                                                     f'.chip{str(chip)}'
                 extra_params[f'img{imgNum}_shift'] = '0 0'
                 extra_params[f'img{imgNum}_xform'] = '1 0 0'
@@ -66,8 +74,10 @@ def dolphot_simultaneous(dlc_param):
                     info_params[f'img{imgNum}_detector'] = dlc_param.DETEC
                     info_params[f'img{imgNum}_filt'] = dlc_param.FILT
 
-                    orig = f'{dlc_param.IMROOT}/imaging/{file}_{dlc_param.SUFFIX}.fits'
-                    masked = f'{dlc_param.IMROOT}/dolphot/{file}_{dlc_param.SUFFIX}.fits'
+                    orig = f'{dlc_param.IMROOT}/imaging/{file}_'\
+                           f'{dlc_param.SUFFIX}.fits'
+                    masked = f'{dlc_param.IMROOT}/dolphot/{file}_'\
+                             f'{dlc_param.SUFFIX}.fits'
 
                     info_params[f'img{imgNum}_orig'] = orig
                     info_params[f'img{imgNum}_masked'] = masked
@@ -76,10 +86,12 @@ def dolphot_simultaneous(dlc_param):
                     command = f'gethead {fname_simultaneous}.fits EXPNAME'
                     namef = subprocess.getoutput(command)
 
-                    orig_crclean = f'{dlc_param.IMROOT}/imaging/{namef}_C0M_crclean.fits'
+                    orig_crclean = f'{dlc_param.IMROOT}/imaging/'\
+                                   f'{namef}_C0M_crclean.fits'
                     orig = f'{dlc_param.IMROOT}/imaging/{namef}_C0M.fits'
                     orig_dq = f'{dlc_param.IMROOT}/imaging/{namef}_C1M.fits'
-                    fn_dp_masked = f'{dlc_param.IMROOT}/dolphot/{namef}_C0M.fits'
+                    fn_dp_masked = f'{dlc_param.IMROOT}/dolphot/'\
+                                   f'{namef}_C0M.fits'
 
                     info_params[f'img{imgNum}_orig_crclean'] = orig_crclean
                     info_params[f'img{imgNum}_orig'] = orig
@@ -99,13 +111,15 @@ def dolphot_simultaneous(dlc_param):
     if dlc_param.IMTYPE == 'subarray':
         if not glob(f'{imdir_simultaneous}{ref_image_use.split("/")[-1]}'):
 
-            os.system(f'cp {ref_image_use} {imdir_simultaneous}')
+            shutil.copy(ref_image_use, imdir_simultaneous)
 
             os.chdir(imdir_simultaneous)
 
-            cmd = f'{dlc_param.DOLPHOT_PATH}wfc3mask {ref_image_use.split("/")[-1]}'
+            cmd = f'{dlc_param.DOLPHOT_PATH}wfc3mask '\
+                  f'{ref_image_use.split("/")[-1]}'
             os.system(cmd)
-            cmd = f'{dlc_param.DOLPHOT_PATH}splitgroups {ref_image_use.split("/")[-1]}'
+            cmd = f'{dlc_param.DOLPHOT_PATH}splitgroups '\
+                  f'{ref_image_use.split("/")[-1]}'
             os.system(cmd)
             for chip in [1]:
                 cmd = f'{dlc_param.DOLPHOT_PATH}calcsky '\
@@ -116,10 +130,7 @@ def dolphot_simultaneous(dlc_param):
     else:
         refim_c1 = ref_image_use.replace(".fits", ".chip1.fits").split("/")[-1]
         if not glob(f'{imdir_simultaneous}{refim_c1}'):
-            os.system(f'cp {ref_image_use.replace(".fits",".chip1.fits")} '
-                      f'{imdir_simultaneous}')
-            os.system(f'cp {ref_image_use.replace(".fits",".chip1.sky.fits")} '
-                      f'{imdir_simultaneous}')
+            pass
 
     if True:
         extra_params['img0_file'] = ref_image_use.replace('.fits', '.chip1')
@@ -141,45 +152,15 @@ def dolphot_simultaneous(dlc_param):
     here using the recommended settings for a WFC3 UVIS registration image
     '''
 
-    mk_param(dlc_param.INST, dlc_param.DETEC, param_file, extra_params, dlc_param.IMTYPE, dlc_param)
+    _mk_param(dlc_param.INST, dlc_param.DETEC, param_file, extra_params,
+              dlc_param.IMTYPE, dlc_param)
 
     cmd = f'{dlc_param.DOLPHOT_PATH}/dolphot output -pdolphot.params'
     os.system(cmd)
 
 
-def sky2xy(img, dlc_param):
-    ra = coord.Angle(dlc_param.SN_RA_ME, unit=u.hour)  # pylint: disable = no-member
-    ra_deg = ra.degree
-
-    dec = coord.Angle(dlc_param.SN_DEC_ME, unit=u.degree)  # pylint: disable = no-member
-    dec_deg = dec.degree
-
-    header = fits.open(img)[0].header
-
-    naxis1 = header['NAXIS1']
-    naxis2 = header['NAXIS2']
-
-    try:
-        w = WCS(header, fix=True)
-
-        coords = coord.SkyCoord(ra_deg*u.degree, dec_deg*u.degree,
-                                equinox='J2000')  # pylint: disable = no-member
-
-        snx, sny = w.wcs_world2pix(ra_deg, dec_deg, 1, ra_dec_order=True)
-    except MemoryError:
-        cmd = f'sky2xy {img} {ra_deg:f} {dec_deg:f}'
-        output = subprocess.getoutput(cmd)
-
-        # FLAG
-        import re
-        res = re.split('\\s+', output.replace(' (off image)',
-                       ''))  # pylint: disable = anomalous-backslash-in-string
-        snx = float(res[-2])
-        sny = float(res[-1])
-
-    return snx, sny, naxis1, naxis2
-
-def mk_param(instrument, detector, param_file, extra_params, imtype, dlc_param):
+def _mk_param(instrument, detector, param_file,
+              extra_params, imtype, dlc_param):
     f = open(param_file, 'w')
     from copy import copy
 
@@ -195,6 +176,33 @@ def mk_param(instrument, detector, param_file, extra_params, imtype, dlc_param):
 
 def prep_files_for_dolphot(image_directory, r_in, r_out,
                            step, sig_low, sig_high, dlc_param):
+    '''
+    Processes images in a directory through masking, spliting, and calcsky
+    programs in Dolphot
+
+    Parameters
+    ----------
+    image_directory : str
+        Path to directory with images
+
+    r_in : float
+        Inner radius of sky annulus
+
+    r_out : float
+        Outer radius of sky annulus
+
+    step : float
+        How often is the sky value is sampled in pixels
+
+    sig_low : float
+        Low sigma under which samples will be rejected
+
+    sig_high : float
+        High sigma above which samples will be rejected
+
+    dlc_param : obj
+        Parameter object from prep_directory function
+    '''
 
     prepped_dir = f'{dlc_param.IMROOT}{image_directory}'
 
@@ -212,8 +220,10 @@ def prep_files_for_dolphot(image_directory, r_in, r_out,
     os.chdir(prepped_dir)
 
     for im in dlc_param.IMAGES:
-        os.system(f'{dlc_param.DOLPHOT_PATH}{dlc_param.MASK} {im.name}_{dlc_param.SUFFIX}.fits')
-        os.system(f'{dlc_param.DOLPHOT_PATH}/splitgroups {im.name}_{dlc_param.SUFFIX}.fits')
+        os.system(f'{dlc_param.DOLPHOT_PATH}{dlc_param.MASK} '
+                  f'{im.name}_{dlc_param.SUFFIX}.fits')
+        os.system(f'{dlc_param.DOLPHOT_PATH}/splitgroups '
+                  f'{im.name}_{dlc_param.SUFFIX}.fits')
         for chip in dlc_param.CHIPS:
             os.system(f'{dlc_param.DOLPHOT_PATH}/calcsky '
                       f'{im.name}_{dlc_param.SUFFIX}.chip{chip} {r_in} '
@@ -228,24 +238,56 @@ def prep_files_for_dolphot(image_directory, r_in, r_out,
     # Refresh the files as AstroDrizzle changed the header info
     files = os.listdir(dlc_param.ORIG_IM_LOC)
     for file in files:
-        shutil.copyfile(f'{dlc_param.ORIG_IM_LOC}/{file}', f'{dlc_param.IMROOT}/Images/{file}')
+        shutil.copyfile(f'{dlc_param.ORIG_IM_LOC}/{file}',
+                        f'{dlc_param.IMROOT}/Images/{file}')
+
 
 def dolphot_force(objCoords, dlc_param, apermag=False,
                   force_same_mag=True, psfphot=1):
+    '''
+    Runs Dolphot on difference images
+
+    Parameters
+    ----------
+
+    objCoords : dict
+        Dictionary of transient object coordinates
+        (Ex: {'S1': [177.398231, 22.395630], ...})
+
+    dlc_param : obj
+        Parameter object from prep_directory function
+
+    apermag : bool
+        Run aperture photometry
+
+    force_same_mag : bool
+        Run photometry assuming same count rate
+
+    psfphot : float
+        Type of photometry to run
+        0 = aperture
+        1 = standard PSF-fit
+        2 = PSF-fit weighted for central pixels
+
+    '''
+
     imdir_prepped = f'{dlc_param.IMROOT}/dolphot_prepped'
     imdir_simultaneous = f'{dlc_param.IMROOT}/diffs'
 
-    ref_image_subarray = f'{dlc_param.FILT}glass_drz'
+    files = os.listdir(imdir_prepped)
+    N = len(files)
+    i = N - 1
+    while i > 0:
+        if 'output' not in files[i]:
+            del files[i]
+        i = i - 1
 
-    for fname in ['output.columns', 'output.warnings', 'output.info',
-                  'output.apcor', 'output.psfs', 'output', 'output.data',
-                  'registration.chip1.fits', 'registration.chip1.sky.fits',
-                  'output.*.psf.fits', f'{ref_image_subarray}.chip1.fits',
-                  f'{ref_image_subarray}.chip1.sky.fits']:
-        cmd = f'cp {imdir_prepped}/{fname} {imdir_simultaneous}'
-        os.system(cmd)  # copy hiding here
+    files.append('registration.chip1.fits')
 
-    # Start
+    for fname in files:
+        shutil.copy(f'{imdir_prepped}/{fname}',
+                    f'{imdir_simultaneous}/{fname}')
+
     imgNum = 0
     extra_params = {}
     info_params = {}
@@ -264,18 +306,15 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
                 raise Exception
 
             fname_prepped = f'{imdir_dolphot_prepped}'\
-                            f'{file.split("/")[-1].split("_")[0]}_{dlc_param.SUFFIX}'\
+                            f'{file.split("/")[-1].split("_")[0]}_'\
+                            f'{dlc_param.SUFFIX}'\
                             f'.chip{str(chip)}'
 
-            x, y, x_size, y_size = sky2xy(f'{fname_prepped}.fits', dlc_param)
-            if 0 < x < x_size and 0 < y < y_size:
+            if chip == dlc_param.ON_CHIP:
                 imgNum += 1
 
                 fname_simultaneous = f'{imdir_simultaneous}{file}_'\
                                      f'{dlc_param.SUFFIX}.chip{chip}'
-                cmd = f'cp {fname_prepped}.fits {fname_simultaneous}.fits'
-                if not glob(f'{fname_simultaneous}.fits'):
-                    os.system(cmd)  # copy hiding here
 
                 cmd = f'cp {fname_prepped}.sky.fits '\
                       f'{fname_simultaneous}.sky.fits'
@@ -291,8 +330,10 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
                     info_params[f'img{imgNum}_detector'] = dlc_param.DETEC
                     info_params[f'img{imgNum}_filt'] = dlc_param.FILT
 
-                    orig = f'{dlc_param.IMROOT}/imaging/{file}_{dlc_param.SUFFIX}.fits'
-                    masked = f'{dlc_param.IMROOT}/dolphot/{file}_{dlc_param.SUFFIX}.fits'
+                    orig = f'{dlc_param.IMROOT}/imaging/{file}_'\
+                           f'{dlc_param.SUFFIX}.fits'
+                    masked = f'{dlc_param.IMROOT}/dolphot/{file}_'\
+                             f'{dlc_param.SUFFIX}.fits'
 
                     info_params[f'img{imgNum}_orig'] = orig
                     info_params[f'img{imgNum}_masked'] = masked
@@ -301,10 +342,12 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
                     command = f'gethead {fname_simultaneous}.fits EXPNAME'
 
                     namef = subprocess.getoutput(command)
-                    orig_crclean = f'{dlc_param.IMROOT}/imaging/{namef}_C0M_crclean.fits'
+                    orig_crclean = f'{dlc_param.IMROOT}/imaging/'\
+                                   f'{namef}_C0M_crclean.fits'
                     orig = f'{dlc_param.IMROOT}/imaging/{namef}_C0M.fits'
                     orig_dq = f'{dlc_param.IMROOT}/imaging/{namef}_C1M.fits'
-                    fn_dp_masked = f'{dlc_param.IMROOT}/dolphot/{namef}_C0M.fits'
+                    fn_dp_masked = f'{dlc_param.IMROOT}/dolphot/'\
+                                   f'{namef}_C0M.fits'
 
                     info_params[f'img{imgNum}_orig_crclean'] = orig_crclean
                     info_params[f'img{imgNum}_orig'] = orig
@@ -331,7 +374,8 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
     '''
     here using the recommended settings for a WFC3 UVIS registration image
     '''
-    mk_param(dlc_param.INST, dlc_param.DETEC, param_file, extra_params, dlc_param.IMTYPE, dlc_param)
+    _mk_param(dlc_param.INST, dlc_param.DETEC, param_file, extra_params,
+              dlc_param.IMTYPE, dlc_param)
     # End
 
     xytfile = open('xytfile', 'w')
@@ -340,16 +384,18 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
 
     for key in objCoords.keys():
 
-        _, _, small_ra, small_dec = objCoords[key]
+        small_ra, small_dec = objCoords[key]
 
         from astropy.wcs import WCS
 
         from astropy.io import fits
 
         try:
-            w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/{dlc_param.REF_IMAGE}')['SCI'])
+            w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/'
+                              f'{dlc_param.REF_IMAGE}')['SCI'])
         except KeyError:
-            w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/{dlc_param.REF_IMAGE}'))
+            w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/'
+                              f'{dlc_param.REF_IMAGE}'))
 
         import astropy.units as u
 
@@ -372,12 +418,12 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
 
     if apermag:
         cmd = f'{dlc_param.DOLPHOT_PATH}/dolphot singlestar -pdolphot.params '\
-              f'xytfile=xytfile usephot=output PSFPhot=0 Force1=1 SigFind=99 '\
-              f'Force1=1 SigFindMult=1.0 SigFinal=-99'
+              f'xytfile=xytfile usephot=output PSFPhot=0 Force1=1 SigFind=-99'\
+              f' Force1=1 SigFindMult=1.0 SigFinal=-99'
     else:
         cmd = f'{dlc_param.DOLPHOT_PATH}/dolphot singlestar -pdolphot.params '\
               f'xytfile=xytfile usephot=output PSFPhot={psfphot} Force1=1 '\
-              f'FitSky=1 SigFind=99 SigFindMult=1.0 SigFinal=-99'
+              f'FitSky=1 SigFind=-99 SigFindMult=1.0 SigFinal=-99'
 
         if force_same_mag:
             cmd += ' ForceSameMag=1'
@@ -387,4 +433,3 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
     os.system(cmd)
 
     statinfo = os.stat('singlestar')
-

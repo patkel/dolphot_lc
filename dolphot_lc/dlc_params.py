@@ -1,8 +1,10 @@
 import os
 import shutil
 from astropy.io import fits
+from drizzlepac import skytopix
 
-class dlc_parameters:
+
+class _dlc_parameters:
     def __init__(self, ORIG_IM_LOC, ORIG_TEMP_LOC, IM_LOC, REF_IMAGE_FULL,
                  DOLPHOT_PATH, IMROOT, SN_RA_ME, SN_DEC_ME,
                  SEXPATH, DOLPHOT_PARAMS):
@@ -15,15 +17,17 @@ class dlc_parameters:
         self.IMROOT = IMROOT
         self.SN_RA_ME = SN_RA_ME
         self.SN_DEC_ME = SN_DEC_ME
+        nodp = "_no_dolphot.fits"
         self.REF_IMAGE_NO_DOLPHOT = f'{self.REF_IMAGE_PATH}/'\
-                                    f'{self.REF_IMAGE.replace(".fits", "_no_dolphot.fits")}'
+                                    f'{self.REF_IMAGE.replace(".fits", nodp)}'
         self.SEXPATH = SEXPATH
-        self.IMAGES = glob_image(self.ORIG_IM_LOC, f'{self.IM_LOC}/ims',
-                                 self.REF_IMAGE_PATH, self.REF_IMAGE,
-                                 self.IMROOT)
-        self.TEMPLATE = glob_image(self.ORIG_TEMP_LOC, f'{self.IM_LOC}/template',
-                                   self.REF_IMAGE_PATH, self.REF_IMAGE,
-                                   self.IMROOT)
+        self.IMAGES = _glob_image(self.ORIG_IM_LOC, f'{self.IM_LOC}/ims',
+                                  self.REF_IMAGE_PATH, self.REF_IMAGE,
+                                  self.IMROOT)
+        self.TEMPLATE = _glob_image(self.ORIG_TEMP_LOC,
+                                    f'{self.IM_LOC}/template',
+                                    self.REF_IMAGE_PATH, self.REF_IMAGE,
+                                    self.IMROOT)
         self.DOLPHOT_PARAMS = DOLPHOT_PARAMS
         self.INST = self.IMAGES[0].instrument
         self.DETEC = self.IMAGES[0].detector
@@ -62,8 +66,29 @@ class dlc_parameters:
         if self.SUFFIX == 'flc':
             self.DR_SUFFIX = 'drc'
 
+        self.ON_CHIP = _which_chip(self.IMAGES[0].loc, self.CHIPS,
+                                   self.SN_RA_ME, self.SN_DEC_ME)
+
+
+def _which_chip(im, chips, ra, dec):
+    good_chip = None
+    a = fits.open(im)
+    for chip in chips:
+        x, y = skytopix.rd2xy(f'{im}[sci,{chip}]', ra, dec)
+        b = a[chip].header
+        x_max = b['NAXIS1']
+        y_max = b['NAXIS2']
+        if x > 0 and x < x_max and y > 0 and y < y_max:
+            good_chip = chip
+
+    if good_chip is None:
+        raise ValueError('Transient not in image')
+
+    return good_chip
+
+
 # Image object with useful properties
-class Image:
+class _Image:
     def __init__(self, loc, instrument, detector, filter, typ, imroot):
         self.loc = loc
         self.instrument = instrument
@@ -75,7 +100,7 @@ class Image:
 
 
 # Build IMAGES list with image objects
-def glob_image(orig_im_loc ,im_loc, ref_image_path, ref_image, imroot):
+def _glob_image(orig_im_loc, im_loc, ref_image_path, ref_image, imroot):
     image_list = os.listdir(orig_im_loc)
     N = len(image_list)
     for i in range(0, N):
@@ -98,11 +123,13 @@ def glob_image(orig_im_loc ,im_loc, ref_image_path, ref_image, imroot):
         else:
             typ = 'sci'
 
-        image_details[i] = Image(image_list[i], inst, detec, filt, typ, imroot)
+        image_details[i] = _Image(image_list[i], inst, detec,
+                                  filt, typ, imroot)
 
     return(image_details)
 
-def Images_Setup(im_loc, orig_im_loc, orig_temp_loc):
+
+def _Images_Setup(im_loc, orig_im_loc, orig_temp_loc):
 
     try:
         os.mkdir(im_loc)
@@ -121,7 +148,7 @@ def Images_Setup(im_loc, orig_im_loc, orig_temp_loc):
 
         for x in range(0, len(b)):
             shutil.copyfile(f'{orig_im_loc}/{b[x]}', f'{im_loc}/ims/{b[x]}')
-    
+
     except FileExistsError:
         pass
 
@@ -136,8 +163,9 @@ def Images_Setup(im_loc, orig_im_loc, orig_temp_loc):
                 b.append(a[x])
 
         for x in range(0, len(b)):
-            shutil.copyfile(f'{orig_temp_loc}/{b[x]}', f'{im_loc}/template/{b[x]}')
-    
+            shutil.copyfile(f'{orig_temp_loc}/{b[x]}',
+                            f'{im_loc}/template/{b[x]}')
+
     except FileExistsError:
         pass
 
@@ -145,11 +173,52 @@ def Images_Setup(im_loc, orig_im_loc, orig_temp_loc):
 def prep_directory(ORIG_IM_LOC, ORIG_TEMP_LOC, IM_LOC, REF_IMAGE_FULL,
                    DOLPHOT_PATH, IMROOT, SN_RA_ME, SN_DEC_ME,
                    SEXPATH, DOLPHOT_PARAMS):
+    '''
+    Copies raw images into a working directory and creates an object to be
+    passed to other functions
 
-    Images_Setup(IM_LOC, ORIG_IM_LOC, ORIG_TEMP_LOC)
-    
-    param_obj = dlc_parameters(ORIG_IM_LOC, ORIG_TEMP_LOC, IM_LOC, REF_IMAGE_FULL,
-                               DOLPHOT_PATH, IMROOT, SN_RA_ME, SN_DEC_ME,
-                               SEXPATH, DOLPHOT_PARAMS)
-    
+    Parameters
+    ----------
+    ORIG_IM_LOC : str
+        Path to original science images
+
+    ORIG_TEMP_LOC : str
+        Path to original template images
+
+    IM_LOC : str
+        Path of working directory
+
+    REF_IMAGE_FULL : str
+        Path to reference image
+
+    DOLPHOT_PATH : str
+        Path to Dolphot bin directory
+
+    IMROOT : str
+        Base directory where program will run
+
+    SN_RA_ME : str
+        Right ascension of transient object (Ex: 12:23:56.7)
+
+    SN_DEC_ME : str
+        Declination of transient object (Ex: -12:23:56.7)
+
+    SEXPATH : str
+        Path to Source-Extractor executable file
+
+    DOLPHOT_PARAMS : dict
+        Dictionary of Dolphot parameters and their values
+
+    Returns
+    -------
+    param_obj : obj
+        Parameter object to be passed to other functions
+    '''
+
+    _Images_Setup(IM_LOC, ORIG_IM_LOC, ORIG_TEMP_LOC)
+
+    param_obj = _dlc_parameters(ORIG_IM_LOC, ORIG_TEMP_LOC, IM_LOC,
+                                REF_IMAGE_FULL, DOLPHOT_PATH, IMROOT, SN_RA_ME,
+                                SN_DEC_ME, SEXPATH, DOLPHOT_PARAMS)
+
     return param_obj

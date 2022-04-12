@@ -5,10 +5,37 @@ from astropy.io import fits
 from stsci.tools import teal
 from drizzlepac.ablot import blot
 
+
 def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
-    prep_imaging(dlc_param)
-    im_drz_blot = f'{dlc_param.IMROOT}/Images/coadd_tweak_{dlc_param.FILT}_sci.fits'
-    #im_drz_blot = '/home/tprocter/HST_Diff/HST_Icarus/template/F814Wglass_5005_drz_sci.fits'
+    '''
+    Blots coadded template image to distorted science images and
+    creates difference image
+
+    Parameters
+    ----------
+
+    r_in : float
+        Inner radius of sky annulus
+
+    r_out : float
+        Outer radius of sky annulus
+
+    step : float
+        How often is the sky value is sampled in pixels
+
+    sig_low : float
+        Low sigma under which samples will be rejected
+
+    sig_high : float
+        High sigma above which samples will be rejected
+
+    dlc_param : obj
+        Parameter object from prep_directory function
+    '''
+
+    _prep_imaging(dlc_param)
+    im_drz_blot = f'{dlc_param.IMROOT}/Images/coadd_tweak_'\
+                  f'{dlc_param.FILT}_sci.fits'
 
     diff_dir = f'{dlc_param.IMROOT}/diffs/'
     dolphot_prepped_dir = f'{dlc_param.IMROOT}/dolphot_prepped/'
@@ -21,9 +48,10 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
         pass
 
     for im in dlc_param.IMAGES:  # all_images:
-        im_to_blot = f'{dlc_param.IMROOT}/imaging/{im.name}_{dlc_param.SUFFIX}.fits'
-        im_to_blot_dolphot_prepped = f'{dlc_param.IMROOT}/dolphot_prepped/{im.name}_'\
-                                     f'{dlc_param.SUFFIX}.fits'
+        im_to_blot = f'{dlc_param.IMROOT}/imaging/{im.name}_'\
+                     f'{dlc_param.SUFFIX}.fits'
+        im_to_blot_dolphot_prepped = f'{dlc_param.IMROOT}/dolphot_prepped/'\
+                                     f'{im.name}_{dlc_param.SUFFIX}.fits'
 
         p = fits.open(im_to_blot)
         p_dol_prep = fits.open(im_to_blot_dolphot_prepped)
@@ -31,12 +59,12 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
         im_diff = f'{diff_dir}{im.name}_{dlc_param.SUFFIX}.fits'
 
         for chip in dlc_param.CHIPS:
-            outdata = f'{dlc_param.IMROOT}/imaging/{im.name}_{dlc_param.SUFFIX}_bgblot_'\
-                      f'{chip:d}.fits'
+            outdata = f'{dlc_param.IMROOT}/imaging/{im.name}_'\
+                      f'{dlc_param.SUFFIX}_bgblot_{chip:d}.fits'
 
-            EXPTIME_DRZ = gethead(im_drz_blot, 'EXPTIME')
+            EXPTIME_DRZ = _gethead(im_drz_blot, 'EXPTIME')
 
-            EXPTIME_BLT = gethead(im_to_blot, 'EXPTIME')
+            EXPTIME_BLT = _gethead(im_to_blot, 'EXPTIME')
 
             try:
                 os.remove(outdata)
@@ -45,7 +73,8 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
 
             blotobj = teal.load('ablot')
 
-            if dlc_param.INST == 'ACS' or (dlc_param.INST == 'WFC3' and dlc_param.DETEC == 'UVIS'):
+            if dlc_param.INST == 'ACS' or (dlc_param.INST == 'WFC3'
+                                           and dlc_param.DETEC == 'UVIS'):
                 blot(im_drz_blot, f'{im_to_blot}[sci,{chip:d}]', outdata,
                      addsky=False, in_units='cps', out_units='counts',
                      expout=1./EXPTIME_DRZ*EXPTIME_BLT*rescale_fac,
@@ -60,7 +89,8 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
 
             a = fits.open(outdata)
 
-            chip_name = f'{im.name}_{dlc_param.SUFFIX.lower()}.chip{chip:d}.fits'
+            chip_name = f'{im.name}_{dlc_param.SUFFIX.lower()}'\
+                        f'.chip{chip:d}.fits'
 
             if chip == 1:
                 p[1].data = 1. * (p[1].data - a[1].data)  # * conv
@@ -78,7 +108,8 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
     prep_files_for_dolphot('/diffs', r_in, r_out,
                            step, sig_low, sig_high, dlc_param)
 
-def prep_imaging(dlc_param):
+
+def _prep_imaging(dlc_param):
     try:
         os.mkdir(f'{dlc_param.IMROOT}/imaging')
     except FileExistsError:
@@ -89,7 +120,8 @@ def prep_imaging(dlc_param):
     for im in all_images:
         shutil.copyfile(im, f'{dlc_param.IMROOT}/imaging/{im.split("/")[-1]}')
 
-def gethead(im, item):
+
+def _gethead(im, item):
     hdulist = fits.open(im)
     value = hdulist[0].header[item]
     hdulist.close()

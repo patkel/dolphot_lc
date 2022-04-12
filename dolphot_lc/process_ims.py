@@ -5,7 +5,17 @@ from drizzlepac import tweakreg
 from drizzlepac import tweakback
 import scipy
 
+
 def coadd_ims(dlc_param):
+    '''
+    Creates coadded template image from raw template images
+
+    Parameters
+    ----------
+    dlc_param : obj
+        Parameter object from prep_directory function
+    '''
+
     image_list = os.listdir('image_backup')
 
     shutil.copyfile('default.conv', './Images/default.conv')
@@ -16,9 +26,9 @@ def coadd_ims(dlc_param):
     except FileExistsError:
         pass
 
-    #Flag replace with dlc_param.IM_LOC
-    flist = os.listdir('Images/template')
-    files_found_backup = [f'{dlc_param.IMROOT}/Images/template/{x}' for x in flist]
+    flist = os.listdir(f'{dlc_param.IM_LOC}/template')
+    files_found_backup = [f'{dlc_param.IM_LOC}/template/{x}'
+                          for x in flist]
 
     i = len(files_found_backup) - 1
     while i > -1:
@@ -40,14 +50,13 @@ def coadd_ims(dlc_param):
     recoaddskyfix = 1
     recoaddglobalmin = 0
     recoaddnorthup = 0
-    alignsci = 0
 
     files_backup = []
 
     '''
     threshold = 10
     refim_align ='./ref/registration.fits'
-    make_template_cat(refim_align, 1, filt, threshold)
+    _make_template_cat(refim_align, 1, filt, threshold)
     sys.exit()
     #'''
 
@@ -95,13 +104,11 @@ def coadd_ims(dlc_param):
                            x in (ims)]
 
             for fname in cfiles_nocr:
-                os.system(f'cp {fname} ./TEMP_nocr/')
+                shutil.copy(fname, f'./TEMP_nocr/')
 
         else:
-            ''' copying cleaned images '''
-            os.system('cp ./TEMP_nocr/* ./IMS/')
-            os.system('cp ./Images/* ./IMS/')
-            ''' copying cleaned images '''
+            shutil.copytree('./TEMP_nocr/', './IMS/')
+            shutil.copytree('./Images/', './IMS/')
 
     fitgeometry = 'rscale'
     nclip = 3
@@ -134,8 +141,8 @@ def coadd_ims(dlc_param):
 
                     threshold = 10
 
-                    make_sextractor_cat1(im, 1, dlc_param.FILT, threshold)
-                    make_sextractor_cat1(im, 4, dlc_param.FILT, threshold)
+                    _make_sextractor_cat1(im, 1, dlc_param.FILT, threshold)
+                    _make_sextractor_cat1(im, 4, dlc_param.FILT, threshold)
 
                     a = im_short.replace('.fits', '')
                     b = im_short.replace('.fits', '')
@@ -181,10 +188,10 @@ def coadd_ims(dlc_param):
                         attach=False, archive=False)
 
             for fname in files:
-                os.system(f'cp {fname} ./TEMP_aligned/')
+                shutil.copy(fname, f'./TEMP_aligned/')
 
         else:
-            os.system('cp ./TEMP_aligned/* ./IMS/')
+            shutil.copytree('./TEMP_aligned/', './IMS/')
 
     if coaddastrom:
 
@@ -212,10 +219,11 @@ def coadd_ims(dlc_param):
                     skymethod='localmin', skystat='mode', build=True,
                     wcskey='TWEAK1', preserve=False)
 
-                os.system(f'cp {ofile} ./coadded_ims/')
+                os.mkdir('./coadded_ims')
+                shutil.copy(ofile, f'./coadded_ims/')
 
         else:
-            os.system('cp ./coadded_ims/* .')
+            shutil.copytree('./coadded_ims/', './')
 
     threshold = 10
 
@@ -228,17 +236,19 @@ def coadd_ims(dlc_param):
         refcat = 'astdriz_catfile_ref.list'
 
         f = open(catName, 'w')
-        make_sextractor_cat1(im_tweak, 1, dlc_param.FILT, threshold, maxobjs=3000)
+        _make_sextractor_cat1(im_tweak, 1, dlc_param.FILT,
+                              threshold, maxobjs=3000)
         a = im_tweak.replace('.fits', '')
         f.write(f'{im_tweak} {a}_ref_1.cat\n')
         f.close()
 
-        make_template_cat(refim_align, 1, dlc_param.FILT, threshold, maxobjs=3000)
+        _make_template_cat(refim_align, 1, dlc_param.FILT,
+                           threshold, maxobjs=3000)
         a = refim_align.replace('.fits', '')
         refcat = f'{a}_ref_1.cat'
 
         a = im_tweak.replace('.fits', '_orig.fits')
-        os.system(f'cp {im_tweak} {a}')
+        shutil.copy(im_tweak, a)
 
         tweakreg.TweakReg([im_tweak], catfile=catName, xcol=1, ycol=2,
                           interactive=False, refimage=refim_align,
@@ -304,7 +314,7 @@ def coadd_ims(dlc_param):
                 im_nocr = os.path.abspath(im_nocr)
 
                 threshold = 5
-                fitscat, fname = make_sextractor_cat1(
+                fitscat, fname = _make_sextractor_cat1(
                                     im_nocr, 1, dlc_param.FILT, threshold,
                                     bgChipEstimate=True)
 
@@ -319,7 +329,7 @@ def coadd_ims(dlc_param):
 
                 f[1].header['PKSKYMODE'] = mode_1
 
-                fitscat, fname = make_sextractor_cat1(
+                fitscat, fname = _make_sextractor_cat1(
                                     im_nocr, 4, dlc_param.FILT, threshold,
                                     bgChipEstimate=True)
 
@@ -354,11 +364,12 @@ def coadd_ims(dlc_param):
                 combine_type = 'imedian'
 
             astrodrizzle.AstroDrizzle(
-                [f for f in cfiles[:]], output=f'coadd_tweak_{dlc_param.FILT}.fits',
+                [f for f in cfiles[:]],
+                output=f'coadd_tweak_{dlc_param.FILT}.fits',
                 final_wcs=True, driz_cr_corr=True, num_cores=64,
                 combine_type=combine_type, skysub=True, build=False,
                 skyfile='skyfile_mode.txt', skyuser='', preserve=False,
-                final_refimage = refim)
+                final_refimage=refim)
 
     if recoaddglobalmin:
 
@@ -399,21 +410,21 @@ def coadd_ims(dlc_param):
 
             astrodrizzle.AstroDrizzle(
                 [f for f in cfiles[:]],
-                output=f'coadd_upnorth_tweak_{dlc_param.FILT}.fits', final_rot=0,
-                final_scale=pix_scale, final_outnx=naxis1,
+                output=f'coadd_upnorth_tweak_{dlc_param.FILT}.fits',
+                final_rot=0, final_scale=pix_scale, final_outnx=naxis1,
                 final_outny=naxis2, final_ra=final_ra, final_dec=final_dec,
                 driz_cr_corr=True, num_cores=64, combine_type=combine_type,
                 skysub=True, build=False, skyfile='skyfile.txt',
                 skyuser='')
 
-def make_template_cat(image, extension, filt, threshold, maxobjs=100):
+
+def _make_template_cat(image, extension, filt, threshold, maxobjs=100):
     '''run sextractor and generate numbered set of detections, and reg file'''
 
     fitscat = image.replace('.fits', '_sex.cat')
 
     ''' PHOT_APERTURES is a DIAMETER !! '''
 
-    os.system('rm test.cat')
     command = f'source-extractor {image}[{extension}] -PHOT_APERTURES 6 '\
               f'-FLAG_IMAGE "" -CATALOG_TYPE FITS_LDAC -DETECT_THRESH '\
               f'{threshold} -DEBLEND_MINCONT 0.001 -PARAMETERS_NAME '\
@@ -461,8 +472,8 @@ def make_template_cat(image, extension, filt, threshold, maxobjs=100):
         reg.close()
 
 
-def make_sextractor_cat1(image, extension, filt, threshold,
-                         maxobjs=100, bgChipEstimate=False):
+def _make_sextractor_cat1(image, extension, filt, threshold,
+                          maxobjs=100, bgChipEstimate=False):
 
     '''run sextractor and generate numbered set of detections, and reg file'''
 
@@ -477,7 +488,6 @@ def make_sextractor_cat1(image, extension, filt, threshold,
 
     ''' PHOT_APERTURES is a DIAMETER !! '''
     import os
-    os.system('rm test.cat')
 
     if bgChipEstimate:
         bg_suffix = f' -BACK_SIZE {back_size}'
@@ -538,11 +548,20 @@ def make_sextractor_cat1(image, extension, filt, threshold,
 
 
 def align_sci(dlc_param):
+    '''
+    Aligns all science images to coadded template image
+
+    Parameters
+    ----------
+    dlc_param : obj
+        Parameter object from prep_directory function
+    '''
+
     ims = []
     for im in dlc_param.IMAGES:
         ims.append(im.loc)
 
-    refim = '/home/tprocter/HST_Diff/HST_Icarus/Images/coadd_tweak_F814W_sci.fits'
+    refim = f'{dlc_param.IMROOT}/Images/coadd_tweak_{dlc_param.FILT}_sci.fits'
 
     if len(ims) <= 6:
         combine_type = 'minmed'
@@ -571,7 +590,7 @@ def align_sci(dlc_param):
         for cfiles in [ims]:
 
             cfiles_nocr = [x.replace('_flc.fits', '_crclean.fits') for
-                            x in cfiles]
+                           x in cfiles]
 
             catName = 'astdriz_catfile.list'
 
@@ -588,8 +607,10 @@ def align_sci(dlc_param):
 
                 threshold = 10
 
-                make_sextractor_cat1(im, 1, dlc_param.FILT, threshold, maxobjs=1000)
-                make_sextractor_cat1(im, 4, dlc_param.FILT, threshold, maxobjs=1000)
+                _make_sextractor_cat1(im, 1, dlc_param.FILT, threshold,
+                                      maxobjs=1000)
+                _make_sextractor_cat1(im, 4, dlc_param.FILT, threshold,
+                                      maxobjs=1000)
 
                 a = im_short.replace('.fits', '')
                 b = im_short.replace('.fits', '')
@@ -600,29 +621,29 @@ def align_sci(dlc_param):
             f.close()
 
             tweakreg.TweakReg(fnames[:], catfile=catName, xcol=1,
-                                ycol=2, updatehdr=True,  nclip=5,
-                                peakmax=50000, sigma=2.5, searchrad=10.0,
-                                tolerance=5.0, writecat=True,
-                                headerlet=True, attach=False,
-                                clobber=True, minobj=-1,
-                                fitgeometry='general',  wcsname="TWEAK1",
-                                shiftfile=True, refimage = refim,
-                                outshifts='shift_file.txt',
-                                residplot='both', see2dplot=True,
-                                interactive=False)
+                              ycol=2, updatehdr=True,  nclip=5,
+                              peakmax=50000, sigma=2.5, searchrad=10.0,
+                              tolerance=5.0, writecat=True,
+                              headerlet=True, attach=False,
+                              clobber=True, minobj=-1,
+                              fitgeometry='general',  wcsname="TWEAK1",
+                              shiftfile=True, refimage=refim,
+                              outshifts='shift_file.txt',
+                              residplot='no plot', see2dplot=False,
+                              interactive=False)
 
             from astropy.table import Table
             shift_tab = Table.read('shift_file.txt',
-                                    format='ascii.no_header',
-                                    names=['file', 'dx', 'dy', 'rot',
-                                            'scale', 'xrms', 'yrms'])
+                                   format='ascii.no_header',
+                                   names=['file', 'dx', 'dy', 'rot',
+                                          'scale', 'xrms', 'yrms'])
 
             formats = ['.2f', '.2f', '.3f', '.5f', '.2f', '.2f']
             for i, col in enumerate(shift_tab.colnames[1:]):
                 shift_tab[col].format = formats[i]
 
             cfiles_nocr = [x.replace('_flc.fits', '_crclean.fits') for
-                            x in cfiles]
+                           x in cfiles]
 
             from stwcs.wcsutil import headerlet
             for fname, fname_orig in zip(cfiles_nocr, cfiles):
@@ -635,4 +656,4 @@ def align_sci(dlc_param):
                     attach=False, archive=False)
 
         for fname in ims:
-            os.system(f'cp {fname} ./IMS_aligned/')
+            shutil.copy(fname, f'./IMS_aligned/')

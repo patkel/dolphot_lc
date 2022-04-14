@@ -14,8 +14,16 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('./../..'))
 
-autodoc_mock_imports = ['astropy', 'drizzlepac', 'scipy', 'stsci']
-
+from unittest.mock import MagicMock
+sys.modules['astropy'] = MagicMock()
+sys.modules['astropy.io'] = MagicMock()
+sys.modules['astropy.coordinates'] = MagicMock()
+sys.modules['astropy.wcs'] = MagicMock()
+sys.modules['drizzlepac'] = MagicMock()
+sys.modules['drizzlepac.ablot'] = MagicMock()
+sys.modules['scipy'] = MagicMock()
+sys.modules['stsci'] = MagicMock()
+sys.modules['stsci.tools'] = MagicMock()
 
 # -- Project information -----------------------------------------------------
 

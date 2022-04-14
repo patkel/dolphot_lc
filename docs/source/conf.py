@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 
 # -- Project information -----------------------------------------------------
@@ -29,6 +29,8 @@ author = 'Patrick Kelly, Thomas Procter'
 # ones.
 extensions = ['sphinx.ext.napoleon'
 ]
+
+master_doc = 'index'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -1,2 +1,3 @@
 ./docs/build
 ./dolphot_lc/__pycache__
+./.vscode

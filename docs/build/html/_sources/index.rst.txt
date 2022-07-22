@@ -10,6 +10,7 @@ Welcome to dolphot_lc's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   install.rst
    modules
 
 Indices and tables
@@ -18,3 +19,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+

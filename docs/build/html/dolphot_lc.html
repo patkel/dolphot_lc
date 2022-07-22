@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html4" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dolphot_lc package &mdash; dolphot_lc  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>dolphot_lc package &mdash; dolphot_lc  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,8 +34,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">dolphot_lc</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dolphot_lc package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
@@ -77,149 +76,174 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="dolphot-lc-package">
-<h1>dolphot_lc package<a class="headerlink" href="#dolphot-lc-package" title="Permalink to this headline"></a></h1>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
-</section>
-<section id="module-dolphot_lc.dlc_params">
-<span id="dolphot-lc-dlc-params-module"></span><h2>dolphot_lc.dlc_params module<a class="headerlink" href="#module-dolphot_lc.dlc_params" title="Permalink to this headline"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="dolphot_lc.dlc_params.prep_directory">
-<span class="sig-prename descclassname"><span class="pre">dolphot_lc.dlc_params.</span></span><span class="sig-name descname"><span class="pre">prep_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ORIG_IM_LOC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ORIG_TEMP_LOC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IM_LOC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">REF_IMAGE_FULL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DOLPHOT_PATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IMROOT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SN_RA_ME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SN_DEC_ME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SEXPATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DOLPHOT_PARAMS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dlc_params.prep_directory" title="Permalink to this definition"></a></dt>
+  <div class="section" id="dolphot-lc-package">
+<h1>dolphot_lc package<a class="headerlink" href="#dolphot-lc-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dolphot_lc.dlc_params">
+<span id="dolphot-lc-dlc-params-module"></span><h2>dolphot_lc.dlc_params module<a class="headerlink" href="#module-dolphot_lc.dlc_params" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dolphot_lc.dlc_params.prep_directory">
+<code class="descclassname">dolphot_lc.dlc_params.</code><code class="descname">prep_directory</code><span class="sig-paren">(</span><em>ORIG_IM_LOC</em>, <em>ORIG_TEMP_LOC</em>, <em>IM_LOC</em>, <em>REF_IMAGE_FULL</em>, <em>DOLPHOT_PATH</em>, <em>IMROOT</em>, <em>SN_RA_ME</em>, <em>SN_DEC_ME</em>, <em>SEXPATH</em>, <em>DOLPHOT_PARAMS</em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dlc_params.prep_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copies raw images into a working directory and creates an object to be
 passed to other functions</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ORIG_IM_LOC</strong> (<em>str</em>) – Path to original science images</p></li>
-<li><p><strong>ORIG_TEMP_LOC</strong> (<em>str</em>) – Path to original template images</p></li>
-<li><p><strong>IM_LOC</strong> (<em>str</em>) – Path of working directory</p></li>
-<li><p><strong>REF_IMAGE_FULL</strong> (<em>str</em>) – Path to reference image</p></li>
-<li><p><strong>DOLPHOT_PATH</strong> (<em>str</em>) – Path to Dolphot bin directory</p></li>
-<li><p><strong>IMROOT</strong> (<em>str</em>) – Base directory where program will run</p></li>
-<li><p><strong>SN_RA_ME</strong> (<em>str</em>) – Right ascension of transient object (Ex: 12:23:56.7)</p></li>
-<li><p><strong>SN_DEC_ME</strong> (<em>str</em>) – Declination of transient object (Ex: -12:23:56.7)</p></li>
-<li><p><strong>SEXPATH</strong> (<em>str</em>) – Path to Source-Extractor executable file</p></li>
-<li><p><strong>DOLPHOT_PARAMS</strong> (<em>dict</em>) – Dictionary of Dolphot parameters and their values</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ORIG_IM_LOC</strong> (<em>str</em>) – Path to original science images</li>
+<li><strong>ORIG_TEMP_LOC</strong> (<em>str</em>) – Path to original template images</li>
+<li><strong>IM_LOC</strong> (<em>str</em>) – Path of working directory</li>
+<li><strong>REF_IMAGE_FULL</strong> (<em>str</em>) – Path to reference image</li>
+<li><strong>DOLPHOT_PATH</strong> (<em>str</em>) – Path to Dolphot bin directory</li>
+<li><strong>IMROOT</strong> (<em>str</em>) – Base directory where program will run</li>
+<li><strong>SN_RA_ME</strong> (<em>str</em>) – Right ascension of transient object (Ex: 12:23:56.7)</li>
+<li><strong>SN_DEC_ME</strong> (<em>str</em>) – Declination of transient object (Ex: -12:23:56.7)</li>
+<li><strong>SEXPATH</strong> (<em>str</em>) – Path to Source-Extractor executable file</li>
+<li><strong>DOLPHOT_PARAMS</strong> (<em>dict</em>) – Dictionary of Dolphot parameters and their values</li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>param_obj</strong> – Parameter object to be passed to other functions</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>param_obj</strong> – Parameter object to be passed to other functions</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">obj</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-</section>
-<section id="module-dolphot_lc.dolphot_scrips">
-<span id="dolphot-lc-dolphot-scrips-module"></span><h2>dolphot_lc.dolphot_scrips module<a class="headerlink" href="#module-dolphot_lc.dolphot_scrips" title="Permalink to this headline"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="dolphot_lc.dolphot_scrips.dolphot_force">
-<span class="sig-prename descclassname"><span class="pre">dolphot_lc.dolphot_scrips.</span></span><span class="sig-name descname"><span class="pre">dolphot_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objCoords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlc_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apermag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_same_mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psfphot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dolphot_scrips.dolphot_force" title="Permalink to this definition"></a></dt>
+</div>
+<div class="section" id="module-dolphot_lc.dolphot_scrips">
+<span id="dolphot-lc-dolphot-scrips-module"></span><h2>dolphot_lc.dolphot_scrips module<a class="headerlink" href="#module-dolphot_lc.dolphot_scrips" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dolphot_lc.dolphot_scrips.dolphot_force">
+<code class="descclassname">dolphot_lc.dolphot_scrips.</code><code class="descname">dolphot_force</code><span class="sig-paren">(</span><em>objCoords</em>, <em>dlc_param</em>, <em>apermag=False</em>, <em>force_same_mag=True</em>, <em>psfphot=1</em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dolphot_scrips.dolphot_force" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs Dolphot on difference images</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>objCoords</strong> (<em>dict</em>) – Dictionary of transient object coordinates
-(Ex: {‘S1’: [177.398231, 22.395630], …})</p></li>
-<li><p><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</p></li>
-<li><p><strong>apermag</strong> (<em>bool</em>) – Run aperture photometry</p></li>
-<li><p><strong>force_same_mag</strong> (<em>bool</em>) – Run photometry assuming same count rate</p></li>
-<li><p><strong>psfphot</strong> (<em>float</em>) – Type of photometry to run
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>objCoords</strong> (<em>dict</em>) – Dictionary of transient object coordinates
+(Ex: {‘S1’: [177.398231, 22.395630], …})</li>
+<li><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</li>
+<li><strong>apermag</strong> (<em>bool</em>) – Run aperture photometry</li>
+<li><strong>force_same_mag</strong> (<em>bool</em>) – Run photometry assuming same count rate</li>
+<li><strong>psfphot</strong> (<em>float</em>) – Type of photometry to run
 0 = aperture
 1 = standard PSF-fit
-2 = PSF-fit weighted for central pixels</p></li>
+2 = PSF-fit weighted for central pixels</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="dolphot_lc.dolphot_scrips.dolphot_simultaneous">
-<span class="sig-prename descclassname"><span class="pre">dolphot_lc.dolphot_scrips.</span></span><span class="sig-name descname"><span class="pre">dolphot_simultaneous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dlc_param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dolphot_scrips.dolphot_simultaneous" title="Permalink to this definition"></a></dt>
+<dl class="function">
+<dt id="dolphot_lc.dolphot_scrips.dolphot_simultaneous">
+<code class="descclassname">dolphot_lc.dolphot_scrips.</code><code class="descname">dolphot_simultaneous</code><span class="sig-paren">(</span><em>dlc_param</em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dolphot_scrips.dolphot_simultaneous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates Dolphot parameter file and runs Dolphot on processed images</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="dolphot_lc.dolphot_scrips.prep_files_for_dolphot">
-<span class="sig-prename descclassname"><span class="pre">dolphot_lc.dolphot_scrips.</span></span><span class="sig-name descname"><span class="pre">prep_files_for_dolphot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlc_param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dolphot_scrips.prep_files_for_dolphot" title="Permalink to this definition"></a></dt>
+<dl class="function">
+<dt id="dolphot_lc.dolphot_scrips.prep_files_for_dolphot">
+<code class="descclassname">dolphot_lc.dolphot_scrips.</code><code class="descname">prep_files_for_dolphot</code><span class="sig-paren">(</span><em>image_directory</em>, <em>r_in</em>, <em>r_out</em>, <em>step</em>, <em>sig_low</em>, <em>sig_high</em>, <em>dlc_param</em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.dolphot_scrips.prep_files_for_dolphot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes images in a directory through masking, spliting, and calcsky
 programs in Dolphot</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>image_directory</strong> (<em>str</em>) – Path to directory with images</p></li>
-<li><p><strong>r_in</strong> (<em>float</em>) – Inner radius of sky annulus</p></li>
-<li><p><strong>r_out</strong> (<em>float</em>) – Outer radius of sky annulus</p></li>
-<li><p><strong>step</strong> (<em>float</em>) – How often is the sky value is sampled in pixels</p></li>
-<li><p><strong>sig_low</strong> (<em>float</em>) – Low sigma under which samples will be rejected</p></li>
-<li><p><strong>sig_high</strong> (<em>float</em>) – High sigma above which samples will be rejected</p></li>
-<li><p><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image_directory</strong> (<em>str</em>) – Path to directory with images</li>
+<li><strong>r_in</strong> (<em>float</em>) – Inner radius of sky annulus</li>
+<li><strong>r_out</strong> (<em>float</em>) – Outer radius of sky annulus</li>
+<li><strong>step</strong> (<em>float</em>) – How often is the sky value is sampled in pixels</li>
+<li><strong>sig_low</strong> (<em>float</em>) – Low sigma under which samples will be rejected</li>
+<li><strong>sig_high</strong> (<em>float</em>) – High sigma above which samples will be rejected</li>
+<li><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-</section>
-<section id="module-dolphot_lc.image_sub">
-<span id="dolphot-lc-image-sub-module"></span><h2>dolphot_lc.image_sub module<a class="headerlink" href="#module-dolphot_lc.image_sub" title="Permalink to this headline"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="dolphot_lc.image_sub.blot_back">
-<span class="sig-prename descclassname"><span class="pre">dolphot_lc.image_sub.</span></span><span class="sig-name descname"><span class="pre">blot_back</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlc_param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.image_sub.blot_back" title="Permalink to this definition"></a></dt>
+</div>
+<div class="section" id="module-dolphot_lc.image_sub">
+<span id="dolphot-lc-image-sub-module"></span><h2>dolphot_lc.image_sub module<a class="headerlink" href="#module-dolphot_lc.image_sub" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dolphot_lc.image_sub.blot_back">
+<code class="descclassname">dolphot_lc.image_sub.</code><code class="descname">blot_back</code><span class="sig-paren">(</span><em>r_in</em>, <em>r_out</em>, <em>step</em>, <em>sig_low</em>, <em>sig_high</em>, <em>dlc_param</em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.image_sub.blot_back" title="Permalink to this definition">¶</a></dt>
 <dd><p>Blots coadded template image to distorted science images and
 creates difference image</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>r_in</strong> (<em>float</em>) – Inner radius of sky annulus</p></li>
-<li><p><strong>r_out</strong> (<em>float</em>) – Outer radius of sky annulus</p></li>
-<li><p><strong>step</strong> (<em>float</em>) – How often is the sky value is sampled in pixels</p></li>
-<li><p><strong>sig_low</strong> (<em>float</em>) – Low sigma under which samples will be rejected</p></li>
-<li><p><strong>sig_high</strong> (<em>float</em>) – High sigma above which samples will be rejected</p></li>
-<li><p><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>r_in</strong> (<em>float</em>) – Inner radius of sky annulus</li>
+<li><strong>r_out</strong> (<em>float</em>) – Outer radius of sky annulus</li>
+<li><strong>step</strong> (<em>float</em>) – How often is the sky value is sampled in pixels</li>
+<li><strong>sig_low</strong> (<em>float</em>) – Low sigma under which samples will be rejected</li>
+<li><strong>sig_high</strong> (<em>float</em>) – High sigma above which samples will be rejected</li>
+<li><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-</section>
-<section id="module-dolphot_lc.process_ims">
-<span id="dolphot-lc-process-ims-module"></span><h2>dolphot_lc.process_ims module<a class="headerlink" href="#module-dolphot_lc.process_ims" title="Permalink to this headline"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="dolphot_lc.process_ims.align_sci">
-<span class="sig-prename descclassname"><span class="pre">dolphot_lc.process_ims.</span></span><span class="sig-name descname"><span class="pre">align_sci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dlc_param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.process_ims.align_sci" title="Permalink to this definition"></a></dt>
+</div>
+<div class="section" id="module-dolphot_lc.process_ims">
+<span id="dolphot-lc-process-ims-module"></span><h2>dolphot_lc.process_ims module<a class="headerlink" href="#module-dolphot_lc.process_ims" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dolphot_lc.process_ims.align_sci">
+<code class="descclassname">dolphot_lc.process_ims.</code><code class="descname">align_sci</code><span class="sig-paren">(</span><em>dlc_param</em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.process_ims.align_sci" title="Permalink to this definition">¶</a></dt>
 <dd><p>Aligns all science images to coadded template image</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="dolphot_lc.process_ims.coadd_ims">
-<span class="sig-prename descclassname"><span class="pre">dolphot_lc.process_ims.</span></span><span class="sig-name descname"><span class="pre">coadd_ims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dlc_param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.process_ims.coadd_ims" title="Permalink to this definition"></a></dt>
+<dl class="function">
+<dt id="dolphot_lc.process_ims.coadd_ims">
+<code class="descclassname">dolphot_lc.process_ims.</code><code class="descname">coadd_ims</code><span class="sig-paren">(</span><em>dlc_param</em><span class="sig-paren">)</span><a class="headerlink" href="#dolphot_lc.process_ims.coadd_ims" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates coadded template image from raw template images</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</p>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dlc_param</strong> (<em>obj</em>) – Parameter object from prep_directory function</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-</section>
-<section id="module-dolphot_lc">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dolphot_lc" title="Permalink to this headline"></a></h2>
-</section>
-</section>
+</div>
+<div class="section" id="module-dolphot_lc">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dolphot_lc" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
 
 
            </div>

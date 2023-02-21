@@ -12,7 +12,7 @@ Welcome to dolphot_lc's documentation!
 
    install.rst
    modules
-   Apply.rst
+   apply.rst
    modules
 
 Indices and tables

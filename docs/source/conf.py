@@ -28,8 +28,8 @@ sys.modules['stsci.tools'] = MagicMock()
 # -- Project information -----------------------------------------------------
 
 project = 'dolphot_lc'
-copyright = '2021, Patrick Kelly, Thomas Procter'
-author = 'Patrick Kelly, Thomas Procter'
+copyright = '2021, Patrick Kelly, Thomas Procter, Ramona White'
+author = 'Patrick Kelly, Thomas Procter, Ramona White'
 
 
 # -- General configuration ---------------------------------------------------

@@ -14,6 +14,7 @@ Welcome to dolphot_lc's documentation!
    modules
    apply.rst
    modules
+   analyze.rst
 
 Indices and tables
 ==================

@@ -12,6 +12,8 @@ Welcome to dolphot_lc's documentation!
 
    install.rst
    modules
+   Apply.rst
+   modules
 
 Indices and tables
 ==================

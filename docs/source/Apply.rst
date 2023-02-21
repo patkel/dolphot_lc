@@ -23,7 +23,8 @@ Now navigate to Jupyter Notebook and change the kernel version of the notebook t
 
 Python Test File Set Up
 -----
-::
+Import necessary modules. ::
+
     import dolphot_lc as dlc
     import time
     import os
@@ -53,6 +54,7 @@ Now list these working directories and add your fits files to the correct locati
 List the RA and DEC coordinates of the object in sexigesimal and degree units. ::
 
     sn_ra_me, sn_dec_me = '13:47:31.8180', '-11:45:51.914'
+    
     objCoords = {'S1': [206.8833, -11.7644],
                  'S2': [206.8833, -11.7644],
                  'S3': [206.8833, -11.7644],

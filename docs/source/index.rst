@@ -6,15 +6,19 @@
 Welcome to dolphot_lc's documentation!
 ======================================
 
+Dolphot-LC is an automated Hubble Space Telescope (HST) data pipeline based on the popular Dolphot analysis package. This package allows for the creation of lightcurves and difference images from HST data.
+
+This Jupyter Notebook allows the user to run their own fits images through the pipeline and generate results. Requires a coadded template image and science images that are already aligned to template.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    install.rst
-   modules
    apply.rst
-   modules
    analyze.rst
+   modules
+
 
 Indices and tables
 ==================

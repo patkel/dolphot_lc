@@ -2,9 +2,6 @@
 Analyze
 ************
 
-Time to garner results from our 
------
-
 
 Refer to the /example/analyze_data.py file in order to garner results. Add the following code to this file.
 

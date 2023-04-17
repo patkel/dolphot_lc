@@ -308,3 +308,10 @@ class dolphot_output:
                                 ''' add date, flag, etc, version, groupnum '''
                     else: pass
         self.meas_dict = meas_dict
+
+objs = [['SN', 567.9625526342381, 176.49369319498047]]
+imroot = os.getcwd()                                # example folder / base directory
+imdir_prepped = f'{imroot}/diffs/'
+a = dolphot_output( imdir_prepped + 'singlestar')
+for objname,x,y in objs:
+    a.info_single_object(x, y, objname, 'orig', settings=False, verbose=False)

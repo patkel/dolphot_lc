@@ -60,11 +60,13 @@ def coadd_ims(dlc_param):
     sys.exit()
     #'''
 
+    
     for fname in files_found_backup:
         from astropy.io import fits
-        p = fits.open(fname)
+        p = fits.open(fname)                    # Open template image
+
         try:
-            filt_exp = p[0].header['FILTER']
+            filt_exp = p[0].header['FILTER']    # Grab value of keyword 'filter'
         except KeyError:
             filt_exp = p[0].header['FILTER2']
 
@@ -265,6 +267,8 @@ def coadd_ims(dlc_param):
             from stwcs.wcsutil import headerlet
 
             default_wcsname = fits.getval(file, 'wcsname', ext=1)
+
+            F = fits.open(file)  # Open image
 
         ''' reversing the WCS names '''
         tweakback.tweakback(im_tweak, input=ims, verbose=True, force=True,

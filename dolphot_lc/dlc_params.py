@@ -35,6 +35,7 @@ class _dlc_parameters:
 
         self.IMTYPE = 'fullarray'
 
+
         if self.INST == 'WFPC2':
             self.MASK = '/wfpc2mask'
             self.CHIPS = [1, 2, 3, 4]
@@ -70,11 +71,15 @@ class _dlc_parameters:
                                    self.SN_RA_ME, self.SN_DEC_ME)
 
 
+
+
+
 def _which_chip(im, chips, ra, dec):
     good_chip = None
     a = fits.open(im)
+
     for chip in chips:
-        x, y = skytopix.rd2xy(f'{im}[sci,{chip}]', ra, dec)
+        x, y = skytopix.rd2xy(f'{im}[sci,{chip}]', ra, dec) #runs error
         b = a[chip].header
         x_max = b['NAXIS1']
         y_max = b['NAXIS2']
@@ -83,6 +88,7 @@ def _which_chip(im, chips, ra, dec):
 
     if good_chip is None:
         raise ValueError('Transient not in image')
+    
 
     return good_chip
 
@@ -101,7 +107,9 @@ class _Image:
 
 # Build IMAGES list with image objects
 def _glob_image(orig_im_loc, im_loc, ref_image_path, ref_image, imroot):
+
     image_list = os.listdir(orig_im_loc)
+
     N = len(image_list)
     for i in range(0, N):
         image_list[i] = im_loc+'/'+image_list[i]

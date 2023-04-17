@@ -18,7 +18,6 @@ def dolphot_simultaneous(dlc_param):
     dlc_param : obj
         Parameter object from prep_directory function
     '''
-
     imdir_simultaneous = f'{dlc_param.IMROOT}/dolphot_prepped'
     try:
         os.mkdir(imdir_simultaneous)
@@ -102,12 +101,12 @@ def dolphot_simultaneous(dlc_param):
                     info_params[f'img{imgNum}_detector'] = dlc_param.DETEC
                     info_params[f'img{imgNum}_filt'] = dlc_param.FILT
 
+
     extra_params['Nimg'] = imgNum
 
     if dlc_param.IMTYPE == 'subarray':
         output_dir = f'{dlc_param.IMROOT}/coadd/'
         ref_image_use = f'{output_dir}{dlc_param.FILT}glass_drz.fits'
-
     if dlc_param.IMTYPE == 'subarray':
         if not glob(f'{imdir_simultaneous}{ref_image_use.split("/")[-1]}'):
 
@@ -139,10 +138,10 @@ def dolphot_simultaneous(dlc_param):
         extra_params['img0_RSky'] = '15 35'
         extra_params['img0_RPSF'] = '15'
 
-    shutil.copyfile(f'{dlc_param.REF_IMAGE_PATH}/'
-                    f'{ref_image_use.replace(".fits",".chip1.fits")}',
-                    f'{imdir_simultaneous}/'
-                    f'{ref_image_use.replace(".fits",".chip1.fits")}')
+    shutil.copyfile(f'{dlc_param.REF_IMAGE_PATH}/'      # /example/Aligned_Images
+                    f'{ref_image_use.replace(".fits",".chip0.fits")}',
+                    f'{imdir_simultaneous}/'            # /example/dolphot_prepped
+                    f'{ref_image_use.replace(".fits",".chip1.fits")}') #/example/dolphot_prepped
 
     param_file = f'{imdir_simultaneous}/dolphot.params'
 
@@ -161,16 +160,19 @@ def dolphot_simultaneous(dlc_param):
 
 def _mk_param(instrument, detector, param_file,
               extra_params, imtype, dlc_param):
+
     f = open(param_file, 'w')
     from copy import copy
 
     if imtype == 'subarray':
         dlc_param.DOLPHOT_PARAMS['UseWCS'] = 2
 
+
     for key in dlc_param.DOLPHOT_PARAMS:
         f.write(f'{key} = {str(dlc_param.DOLPHOT_PARAMS[key])}\n')
     for key in extra_params:
         f.write(f'{key} = {str(extra_params[key])}\n')
+
     f.close()
 
 
@@ -282,11 +284,14 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
             del files[i]
         i = i - 1
 
-    files.append('registration.chip1.fits')
+    ### files.append('registration.chip1.fits')
+    files.append('coadd_CLASH_sci.chip1.fits')
+
 
     for fname in files:
         shutil.copy(f'{imdir_prepped}/{fname}',
-                    f'{imdir_simultaneous}/{fname}')
+                    f'{imdir_simultaneous}/{fname}') # copies 1st file to replace 2nd
+
 
     imgNum = 0
     extra_params = {}
@@ -386,20 +391,22 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
 
         small_ra, small_dec = objCoords[key]
 
-        from astropy.wcs import WCS
-
-        from astropy.io import fits
-
         try:
             w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/'
-                              f'{dlc_param.REF_IMAGE}')['SCI'])
+                              f'{dlc_param.REF_IMAGE}')['SCI']) ###
+            print("w is chosen here 1")
         except KeyError:
-            w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/'
+            try:
+                w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/'   ###
+                              f'{dlc_param.REF_IMAGE}')[0])
+                print("w is chosen here 2")
+
+            except:
+                w = WCS(fits.open(f'{dlc_param.REF_IMAGE_PATH}/'   ###
                               f'{dlc_param.REF_IMAGE}'))
+                print("w is chosen here 3")
 
-        import astropy.units as u
 
-        import astropy.coordinates as coord
         ra = coord.Angle(small_ra, unit=u.hour)  # pylint: disable = no-member
         ra_deg = ra.degree
 
@@ -410,6 +417,8 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
         ''' need to translate '''
         big_x, big_y = w.wcs_world2pix(small_ra, small_dec, 1,
                                        ra_dec_order=True)
+
+        print("HERE IN D_FORCE big_x, big_y = ", big_x, big_y)
 
         objs.append([key, big_x, big_y])
 
@@ -430,6 +439,10 @@ def dolphot_force(objCoords, dlc_param, apermag=False,
         else:
             cmd += ' ForceSameMag=0'
 
+    print('Running DOLPHOT forced photometry')
     os.system(cmd)
+    print('Finished running DOLPHOT forced photometry')
 
-    statinfo = os.stat('singlestar')
+    #os.system("pwd") # prints current working directory, ensure 'singlestar' present
+
+    statinfo = os.stat('singlestar') # path

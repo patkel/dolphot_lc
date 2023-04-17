@@ -34,6 +34,8 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
     '''
 
     _prep_imaging(dlc_param)
+    
+    #DOLPHOT_DIR = os.environ.get('DOLPHOT_DIR')  #{dlc_param.IMROOT}
     im_drz_blot = f'{dlc_param.IMROOT}/Images/coadd_tweak_'\
                   f'{dlc_param.FILT}_sci.fits'
 
@@ -52,7 +54,6 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
                      f'{dlc_param.SUFFIX}.fits'
         im_to_blot_dolphot_prepped = f'{dlc_param.IMROOT}/dolphot_prepped/'\
                                      f'{im.name}_{dlc_param.SUFFIX}.fits'
-
         p = fits.open(im_to_blot)
         p_dol_prep = fits.open(im_to_blot_dolphot_prepped)
 
@@ -103,7 +104,7 @@ def blot_back(r_in, r_out, step, sig_low, sig_high, dlc_param):
                             f'{diff_dir}'
                             f'{chip_name.replace(".fits", ".sky.fits")}')
 
-        p.writeto(im_diff, overwrite=True)
+        p.writeto(im_diff, overwrite=True) #im_diff is file created to write to
 
     prep_files_for_dolphot('/diffs', r_in, r_out,
                            step, sig_low, sig_high, dlc_param)

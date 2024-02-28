@@ -1,4 +1,3 @@
-''' test '''
 import os
 import shutil
 from astropy.io import fits

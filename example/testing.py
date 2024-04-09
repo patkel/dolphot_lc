@@ -8,6 +8,9 @@ from astropy.wcs import WCS
 
 ######################################################################
 ##### example required to run tests #######
+
+os.chdir('example')
+
 imroot = os.getcwd()	#example folder / base directory
 
 orig_im_loc = f'{imroot}/image_backup/ims'          # image (WFC3 instrume)

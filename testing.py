@@ -88,4 +88,15 @@ def test_dolphot_force():
         x, y = w.wcs_world2pix(ra, dec, 1)
         line = f.readline()
         assert str(line.strip()) == str(f'0 1 {x} {y} 2 10')
+        
+print('running test_prep_files_for_dolphot')
+test_prep_files_for_dolphot()
 
+print('running test_dolphot_simultaneous')
+test_dolphot_simultaneous()
+
+print('running test_dolphot_blot_back')
+test_dolphot_blot_back()
+
+print('running test_dolphot_force')
+test_dolphot_force()

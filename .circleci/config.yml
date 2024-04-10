@@ -17,6 +17,8 @@ jobs:
       - run:
           name: Install dolphot 
           command: for f in tar.gz ACS.tar.gz WFC3.tar.gz WFPC2.tar.gz Roman.tar.gz; do wget http://americano.dolphinsim.com/dolphot/dolphot2.0."$f"; done
+          command: for f in ACS_WFC_PAM ACS_WFC_F814W WFC3_UVIS_PAM WFC3_UVIS_F814W; do wget http://americano.dolphinsim.com/dolphot/"$f".tar.gz; done
+          command: for f in *.tar.gz; do tar xf "$f"; done
       - run:
           name: Run tests
           command: python -m testing

@@ -19,7 +19,7 @@ jobs:
           command: cd example; for f in tar.gz ACS.tar.gz WFC3.tar.gz WFPC2.tar.gz Roman.tar.gz; do wget http://americano.dolphinsim.com/dolphot/dolphot2.0."$f"; done; for f in *.tar.gz; do tar xf "$f"; done; 
       - run:
           name: Install Dolphot 
-          command: cd dolphot2.0; patch < ../Makefile.patch; patch < ../dolphot_common.patch; make
+          command: cd example/dolphot2.0; patch < ../Makefile.patch; patch < ../dolphot_common.patch; make
       - run:
           name: Run tests
           command: python -m testing

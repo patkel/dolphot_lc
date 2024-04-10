@@ -1,0 +1,14 @@
+--- dolphot_common.h	2022-12-09 19:29:12
++++ dolphot_common_patch.h	2023-02-01 15:38:31
+@@ -357,9 +357,9 @@
+       if (!strcasecmp(var,"RSky0")) {RSky00=x; return 1;}
+       if (!strcasecmp(var,"RSky1")) {RSky10=x; return 1;}
+       if (!strcasecmp(var,"SkySig")) {SkySig=x; if (FitSky==1 && SkySig<1) perr("SkySig>=1"); return 1;}
+-      if (!strcasecmp(var,"SigFind")) {SigFind=x; if (SigFind<=0) perr("SigFind>0"); return 1;}
++      if (!strcasecmp(var,"SigFind")) {SigFind=x; if (SigFind<=-999) perr("SigFind>0"); return 1;}
+       if (!strcasecmp(var,"SigFindMult")) {SigFindMult=x; if (SigFindMult<=0) perr("SigFindMult>0"); return 1;}
+-      if (!strcasecmp(var,"SigFinal")) {SigFinal=x; if (SigFinal<=0) perr("SigFinal>0"); return 1;}
++      if (!strcasecmp(var,"SigFinal")) {SigFinal=x; if (SigFinal<=-999) perr("SigFinal>0"); return 1;}
+       if (!strcasecmp(var,"NoiseMult")) {NoiseMult=x; if (NoiseMult<0) perr("NoiseMult>=0."); NoiseMult*=NoiseMult; return 1;}
+       if (!strcasecmp(var,"FSat")) {FSat=x; if (FSat<=0) perr("FSat>0"); if (FSat>1) FSat=1; return 1;}
+       if (!strcasecmp(var,"AlignTol")) {AlignTol=x; if (AlignTol<0) perr("AlignTol>=0"); return 1;}

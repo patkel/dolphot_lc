@@ -1,0 +1,15 @@
+--- Makefile	2022-11-29 01:29:45
++++ Makefile_patch	2023-02-01 13:01:25
+@@ -17,10 +17,10 @@
+ #export USEWFPC2=1
+ 
+ #uncomment if you will be using the ACS module
+-#export USEACS=1
++export USEACS=1
+ 
+ #uncomment if you will be using the WFC3 module
+-#export USEWFC3=1
++export USEWFC3=1
+ 
+ #uncomment if you will be using the ROMAN module
+ #export USEROMAN=1

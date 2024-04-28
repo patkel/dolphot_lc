@@ -9,6 +9,7 @@ Dolphot-LC is an automated Hubble Space Telescope (HST) data pipeline based on t
 Installation and development instructions can be found on our Read the Docs and Jupyter Notebook. The Jupyter Notebook allows the user to run their own fits images through the pipeline and generate results. Dolphot-LC requires a coadded template image and science images that are already aligned to template; our testing procedures have example images already in the github. 
 
 Read the Docs ---- https://dolphot-lc.readthedocs.io/en/latest/
+
 Jupyter Notebook ---- https://nbviewer.org/gist/whit5224/287af111f44bf83a23eaaf19a5121c75
 
 

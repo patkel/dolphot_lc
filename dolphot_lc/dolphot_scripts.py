@@ -640,7 +640,7 @@ def _sample_points_in_region(region_file, n, wcs):
     return points
 
 
-def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=50,
+def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=10,
               region_file=None):
 
     from astropy.io import fits
@@ -706,8 +706,7 @@ def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=50,
     print("HERE IN D_FORCE big_x, big_y = ", x_transient, y_transient)
 
 
-
-    mag = 28.5
+    mag = 34 
 
     import random
 
@@ -721,9 +720,8 @@ def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=50,
         print(f"Sampling {nstar} fake-star positions from region file: {region_file}")
         sampled = _sample_points_in_region(region_file, nstar, w)
         for xp, yp in sampled:
-            ra, dec = w.wcs_pix2world(xp, yp, 1)
-            xps.append(ra)
-            yps.append(dec)
+            xps.append(xp)
+            yps.append(yp)
             f.write(f'0 1 {xp:.2f} {yp:.2f} {mag:.2f}\n')
             f2.write(f'0 1 {xp:.2f} {yp:.2f} 1 10\n')
     else:
@@ -734,10 +732,8 @@ def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=50,
             xp = x_transient + xp_shift
             yp = y_transient + yp_shift
 
-            ra, dec = w.wcs_pix2world( xp, yp, 1 )
-
-            xps.append(ra)
-            yps.append(dec)
+            xps.append(xp)
+            yps.append(yp)
 
             f.write(f'0 1 {xp:.2f} {yp:.2f} {mag:.2f}\n')
             f2.write(f'0 1 {xp:.2f} {yp:.2f} 1 10\n')
@@ -751,6 +747,48 @@ def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=50,
           f'usephot=output FakeStars=Fake.list '  # check FakeStarPSF
     print(cmd)
     os.system(cmd)
+
+
+
+    ''' use convertpos to compute pixel positions in each image from reference-frame positions '''
+    # Format: img0 e z x y  (img0=0 = reference frame, e=0, z=1 = chip1)
+    with open('convertpos_in.txt', 'w') as fcp:
+        fcp.write(f'0 0 1 {x_transient:.2f} {y_transient:.2f}\n')
+        for xp, yp in zip(xps, yps):
+            fcp.write(f'0 0 1 {xp:.2f} {yp:.2f}\n')
+
+    cp_result = subprocess.run(
+        [f'{dlc_param.DOLPHOT_PATH}/convertpos', 'output', 'convertpos_in.txt',
+         '-pdolphot.params'],
+        capture_output=True, text=True)
+    print('convertpos stdout:', cp_result.stdout)
+    if cp_result.returncode != 0:
+        print('convertpos stderr:', cp_result.stderr)
+
+    # Parse output: each input line produces one output line of the form:
+    #   img0 e z x0 y0  0 xref yref  1 x1 y1  2 x2 y2  ...
+    # First input line is the transient; remaining lines are fake stars.
+    # Build dict: img_num (1-indexed) -> list of (x, y), ordered [transient, fake0, fake1, ...]
+    img_positions = {}
+    for line in cp_result.stdout.splitlines():
+        line = line.strip()
+        if not line or line.startswith('*'):
+            continue
+        tokens = line.split()
+        if len(tokens) < 8:
+            continue
+        i = 5  # skip img0 e z x0 y0
+        while i + 2 <= len(tokens):
+            img_num = int(tokens[i])
+            x = float(tokens[i + 1])
+            y = float(tokens[i + 2])
+            if img_num >= 1:  # skip img=0 (reference-frame echo)
+                if img_num not in img_positions:
+                    img_positions[img_num] = []
+                img_positions[img_num].append((x, y))
+            i += 3
+    # img_positions[N][0]  = transient position in image N
+    # img_positions[N][1:] = fake star positions in image N
 
     ''' create dolphotFake.params and reset filenames '''
     f = open('dolphot.params','r').readlines()
@@ -767,34 +805,13 @@ def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=50,
             ofile = 'output.%d.mod.fits' % imInd
 
             print('cwd', os.getcwd() )
-
             print(ifile)
 
+            # Retrieve positions in this image computed by convertpos
+            x_transient_im, y_transient_im = img_positions[imInd][0]
+            fake_pos_im = img_positions[imInd][1:]
 
-
-            if ifile.find('chip1') != -1:
-                w = WCS(fits.open('../Images/' + ifile.replace('.chip1',''))['SCI',1].header) ###
-            else:
-                print(ifile.replace('.chip2',''))
-
-
-                fl = '../Images/' + ifile.replace('.chip2','')
-
-                print(fl)
-
-                ''' use DOLPHOT routines instead !!! '''
-                w = WCS(fits.open(fl)[2].header) ###
-
-            ''' need to translate '''
-            #big_x, big_y = 2170.59, 2713.410 # w.wcs_world2pix(small_ra, small_dec, 1,
-                                           #ra_dec_order=True)
-                                                                                        
-                                                                                        
-            
-            
-                                                                                        
-            print("HERE IN D_FORCE big_x, big_y = ", x_transient, y_transient)
-
+            print(f"convertpos positions in image {imInd}: transient=({x_transient_im:.2f}, {y_transient_im:.2f})")
 
             from astropy.io import fits
 
@@ -804,48 +821,28 @@ def fake_phot(dlc_param, objCoords, psfphot, filt, key, nstar=50,
 
             oh[0].data[ ih[0].data < 0 ] = ih[0].data[ ih[0].data < 0 ]
 
-            ''' also copy over negative pixels '''
+            print(imInd, x_transient_im, y_transient_im)
 
 
-            
-            x_transient, y_transient= w.wcs_world2pix(small_ra, small_dec, 1,
-                               ra_dec_order=True)
-
-            print(x_transient, y_transient) 
-
-
-
-
-            width = 10 
-            m_neg = oh[0].data[ int(y_transient) - width : int(y_transient) + width , int(x_transient) - width : int(x_transient) + width  ] < 0
+            width = 4
+            m_neg = oh[0].data[ int(y_transient_im) - width : int(y_transient_im) + width,
+                                 int(x_transient_im) - width : int(x_transient_im) + width ] < 0
 
             print('m_neg', m_neg)
 
-
-            for ra, dec in zip(xps, yps):
-
-
-                x, y= w.wcs_world2pix(ra, dec, 1,
-                               ra_dec_order=True)
-
+            for x, y in fake_pos_im:
 
                 print(x, y)
 
 
-
-
-                #oh[0].data[ int(y_transient) + ysh - 4 : int(y_transient) + ysh + 4, int(x_transient) + xsh - 4 : int(x_transient) + xsh + 4][m_neg] = 99999
-
                 import numpy
-
-                #print('here',99999. * numpy.array( m_neg, dtype=int))
 
                 print(m_neg.shape)
 
-                oh[0].data[ int(y) - width : int(y) + width, int(x) - width : int(x) + width] += -99999. * numpy.array( m_neg, dtype=int)
+                oh[0].data[ int(y) - width : int(y) + width,
+                            int(x) - width : int(x) + width ] += -99999. * numpy.array( m_neg, dtype=int)
 
-
-                print(x_transient, y_transient)
+                print(x_transient_im, y_transient_im)
 
             oh.writeto(ofile, overwrite=True)
 
